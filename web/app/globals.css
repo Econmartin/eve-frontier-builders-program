@@ -112,6 +112,7 @@
   --clip-card-small:        polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
   --clip-diagonal:          polygon(17px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 5px 100%, 0 calc(100% - 5px), 0 17px);
   --clip-diagonal-small:    polygon(12px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 4px 100%, 0 calc(100% - 4px), 0 12px);
+  --clip-interlock:         polygon(12px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%, 17px calc(100% - 17px), 17px 5px);
 
   /* inset shapes */
   --clip-diagonal-inner:          polygon(17.41px 1px, calc(100% - 5.41px) 1px, calc(100% - 1px) 5.41px, calc(100% - 1px) calc(100% - 17.41px), calc(100% - 17.41px) calc(100% - 1px), 5.41px calc(100% - 1px), 1px calc(100% - 5.41px), 1px 17.41px);
@@ -120,6 +121,8 @@
   --clip-diagonal-small-inner:   polygon(12.41px 1px, calc(100% - 4.41px) 1px, calc(100% - 1px) 4.41px, calc(100% - 1px) calc(100% - 12.41px), calc(100% - 12.41px) calc(100% - 1px), 4.41px calc(100% - 1px), 1px calc(100% - 4.41px), 1px 12.41px);
   --clip-diagonal-small-inner-2: polygon(12.83px 2px, calc(100% - 4.83px) 2px, calc(100% - 2px) 4.83px, calc(100% - 2px) calc(100% - 12.83px), calc(100% - 12.83px) calc(100% - 2px), 4.83px calc(100% - 2px), 2px calc(100% - 4.83px), 2px 12.83px);
   --clip-diagonal-small-inner-3: polygon(13.24px 3px, calc(100% - 5.24px) 3px, calc(100% - 3px) 5.24px, calc(100% - 3px) calc(100% - 13.24px), calc(100% - 13.24px) calc(100% - 3px), 5.24px calc(100% - 3px), 3px calc(100% - 5.24px), 3px 13.24px);
+  --clip-interlock-inner:        polygon(14.41px 1px, calc(100% - 5.41px) 1px, calc(100% - 1px) 5.41px, calc(100% - 1px) calc(100% - 17.41px), calc(100% - 17.41px) calc(100% - 1px), 2.41px calc(100% - 1px), 18px calc(100% - 16.59px), 18px 4.59px);
+  --clip-interlock-inner-2:      polygon(16.83px 2px, calc(100% - 5.83px) 2px, calc(100% - 2px) 5.83px, calc(100% - 2px) calc(100% - 17.83px), calc(100% - 17.83px) calc(100% - 2px), 4.83px calc(100% - 2px), 19px calc(100% - 16.17px), 19px 4.17px);
 
   /* focus halos */
   --clip-diagonal-halo:             polygon(19.34px 0, calc(100% - 7.34px) 0, 100% 7.34px, 100% calc(100% - 19.34px), calc(100% - 19.34px) 100%, 7.34px 100%, 0 calc(100% - 7.34px), 0 19.34px);

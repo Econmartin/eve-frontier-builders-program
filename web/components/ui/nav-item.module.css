@@ -2,9 +2,6 @@
 .list {
   --nav-overlap: 17px;
   --nav-gap: 7px;
-  --clip-interlock: polygon(12px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%, 17px calc(100% - 17px), 17px 5px);
-  --clip-interlock-inner: polygon(14.41px 1px, calc(100% - 5.41px) 1px, calc(100% - 1px) 5.41px, calc(100% - 1px) calc(100% - 17.41px), calc(100% - 17.41px) calc(100% - 1px), 2.41px calc(100% - 1px), 18px calc(100% - 16.59px), 18px 4.59px);
-  --clip-interlock-inner-2: polygon(16.83px 2px, calc(100% - 5.83px) 2px, calc(100% - 2px) 5.83px, calc(100% - 2px) calc(100% - 17.83px), calc(100% - 17.83px) calc(100% - 2px), 4.83px calc(100% - 2px), 19px calc(100% - 16.17px), 19px 4.17px);
   display: flex;
   align-items: center;
   flex: none;
