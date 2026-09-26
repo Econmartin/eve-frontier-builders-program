@@ -7,3 +7,4 @@ export {
   type ButtonVariant,
   type ButtonSize,
 } from "./button";
+export { NavItem, NavList } from "./nav-item";

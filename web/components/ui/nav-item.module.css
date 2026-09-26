@@ -1,0 +1,103 @@
+/* Navigation row */
+.list {
+  --nav-overlap: 17px;
+  --nav-gap: 7px;
+  --clip-interlock: polygon(12px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%, 17px calc(100% - 17px), 17px 5px);
+  --clip-interlock-inner: polygon(14.41px 1px, calc(100% - 5.41px) 1px, calc(100% - 1px) 5.41px, calc(100% - 1px) calc(100% - 17.41px), calc(100% - 17.41px) calc(100% - 1px), 2.41px calc(100% - 1px), 18px calc(100% - 16.59px), 18px 4.59px);
+  --clip-interlock-inner-2: polygon(16.83px 2px, calc(100% - 5.83px) 2px, calc(100% - 2px) 5.83px, calc(100% - 2px) calc(100% - 17.83px), calc(100% - 17.83px) calc(100% - 2px), 4.83px calc(100% - 2px), 19px calc(100% - 16.17px), 19px 4.17px);
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 0;
+}
+
+/* Interlock stacking order */
+.list > *:nth-child(1) { z-index: 6; }
+.list > *:nth-child(2) { z-index: 5; }
+.list > *:nth-child(3) { z-index: 4; }
+.list > *:nth-child(4) { z-index: 3; }
+.list > *:nth-child(5) { z-index: 2; }
+.list > *:nth-child(6) { z-index: 1; }
+
+/* Base navigation item */
+.item {
+  --surface-key: 0;
+  --surface-clip-inner: var(--clip-diagonal-inner);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 22px;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--color-foreground);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s;
+}
+
+/* Interlocking items */
+.linked {
+  --surface-clip-inner: var(--clip-interlock-inner);
+  padding-left: 34px;
+  margin-left: calc(var(--nav-gap) - var(--nav-overlap));
+}
+
+/* Keyboard focus keyline */
+.item:focus-visible {
+  --surface-clip-inner: var(--clip-diagonal-inner-2);
+  --surface-keyline: var(--color-foreground);
+  z-index: 10;
+  outline: none;
+}
+
+/* Interlock focus inset */
+.linked:focus-visible { --surface-clip-inner: var(--clip-interlock-inner-2); }
+
+/* Active-state lamp */
+.lamp {
+  position: relative;
+  flex: none;
+  width: 4px;
+  height: 0.62em;
+  background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
+  transition: background .14s ease, box-shadow .14s ease;
+}
+
+.item:is(:hover, :focus-visible) .lamp,
+.item[aria-current] .lamp {
+  background: var(--color-accent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
+    0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .lamp { transition: none; }
+}
+
+/* Windows high-contrast mode */
+@media (forced-colors: active) {
+  /* forced colours are applied after transitions compute, so every
+     intermediate frame snaps to Canvas — i.e. a black flash */
+  .item,
+  .lamp { transition: none; }
+
+  /* the interlock exists only as clip-path, which forced-colors drops — the
+     negative margin then reads as doubled borders, so space them instead */
+  .list { gap: 6px; }
+  .linked { margin-left: 0; padding-left: 22px; }
+
+  /* the hover/focus lamp rule outranks a bare .lamp here, and its background
+     would be forced to a background colour, i.e. invisible */
+  .lamp { background: ButtonText; box-shadow: none; }
+  .item:is(:hover, :focus-visible) .lamp,
+  .item[aria-current] .lamp { background: Highlight; box-shadow: none; }
+
+  .item:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+}
