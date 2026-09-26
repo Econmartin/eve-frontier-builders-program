@@ -110,7 +110,7 @@
   .button { border: 1px solid ButtonText; }
   .button:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
    .button:is(:disabled, [aria-disabled="true"]:not([aria-busy="true"])) { border-color: GrayText; color: GrayText; }
-  .focus:has(> .button:focus-visible) { background: none; }
+  .focus:has(> .button:focus-visible) { background: none; clip-path: none; }
   .focus:has(> .button:focus-visible)::before { display: none; }
   .cells i { box-sizing: border-box; border: 3px solid ButtonText; background: none; }
 }
