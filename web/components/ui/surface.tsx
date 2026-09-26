@@ -6,12 +6,14 @@ import type {
 } from "react";
 
 import { cn } from "@/lib/cn";
+import styles from "./surface.module.css";
 
 type SurfaceShape = "card" | "card-small" | "diagonal" | "diagonal-small";
 
 interface SurfaceOwnProps<T extends ElementType> {
   as?: T;
   shape?: SurfaceShape;
+  keyline?: CSSProperties["background"];
   fill?: CSSProperties["background"];
   children?: ReactNode;
   className?: string;
@@ -21,13 +23,30 @@ interface SurfaceOwnProps<T extends ElementType> {
 type SurfaceProps<T extends ElementType> = SurfaceOwnProps<T> &
   Omit<ComponentPropsWithRef<T>, keyof SurfaceOwnProps<T>>;
 
+/**
+ * A clipped surface with a configurable keyline and fill.
+ *
+ * @example
+ * ```tsx
+ * <Surface
+ *   as="section"
+ *   shape="card"
+ *   fill="var(--color-card)"
+ *   className="p-m"
+ * >
+ *   Card content
+ * </Surface>
+ * ```
+ */
+
 export function Surface<T extends ElementType = "div">(
   props: SurfaceProps<T>,
 ) {
   const {
     as,
     shape = "card",
-    fill = "var(--color-card)",
+    keyline,
+    fill,
     children,
     className,
     style,
@@ -35,20 +54,21 @@ export function Surface<T extends ElementType = "div">(
   } = props;
 
   const Component: ElementType = as ?? "div";
-  const clipPath = `var(--clip-${shape})`;
 
   return (
     <Component
       {...rest}
-      className={cn("relative isolate bg-line", className)}
-      style={{ ...style, clipPath }}
+      className={cn(styles.surface, className)}
+      style={
+        {
+          ...style,
+          "--surface-clip": `var(--clip-${shape})`,
+          ...(keyline ? { "--surface-keyline": keyline } : null),
+          ...(fill ? { "--surface-fill": fill } : null),
+        } as CSSProperties
+      }
     >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-px block"
-        style={{ clipPath, background: fill }}
-      />
-      <span className="relative block h-full">{children}</span>
+      {children}
     </Component>
   );
 }

@@ -1,0 +1,45 @@
+.button {
+  --key: 1px;
+  --surface-key: var(--key);
+  --sweep: 0deg;
+  --ang: 0deg;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  transition: --sweep .55s cubic-bezier(.2,.8,.2,1), --key .2s, color .2s, transform .12s;
+}
+
+.button:is(:hover, :focus-visible) { --sweep: 360deg; --key: 2px; }
+.button:active { --sweep: 360deg; --key: 3px; transform: translateY(1px); }
+
+.primary { --edge: var(--color-accent); --sweepcol: var(--color-foreground); color: var(--color-text-on-accent); }
+.primary:active { --fill: var(--color-accent-pressed); }
+
+.secondary { --edge: var(--color-foreground); --sweepcol: var(--color-accent); --fill: var(--color-background); color: var(--color-foreground); }
+.secondary:active { --fill: var(--color-card-secondary); }
+
+.sm { padding: 8px 16px;  min-height: 34px; font-size: 14px; }
+.md { padding: 12px 24px; min-height: 46px; font-size: 15px; }
+.lg { padding: 17px 24px; min-height: 56px; font-size: 16.5px; }
+
+/* after the interaction rules so it outranks them at equal weight */
+.button:is(:disabled, [aria-disabled="true"]) {
+  --sweep: 0deg;
+  --key: 1px;
+  --fill: none;
+  color: var(--color-muted);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button[aria-busy="true"] { --key: 2px; cursor: progress; animation: radar 1.2s linear infinite; }
+@keyframes radar { to { --ang: 360deg; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+  .button[aria-busy="true"] { animation: none; }
+}

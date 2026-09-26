@@ -1,0 +1,15 @@
+.surface {
+  position: relative;
+  isolation: isolate;
+  clip-path: var(--surface-clip);
+  background: var(--surface-keyline, var(--color-line));
+}
+
+.surface::before {
+  content: "";
+  position: absolute;
+  inset: var(--surface-key, 1px);
+  z-index: -1;
+  clip-path: inherit;
+  background: var(--surface-fill, var(--color-card));
+}
