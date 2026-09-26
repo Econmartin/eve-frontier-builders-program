@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef, MouseEvent } from "react";
+import type { ComponentPropsWithRef, CSSProperties, MouseEvent } from "react";
 import { Surface } from "./surface";
 import { cn } from "@/lib/cn";
 import styles from "./button.module.css";
@@ -36,7 +36,9 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const inert = disabled || loading;
+  const shape = size === "sm" ? "diagonal-small" : "diagonal";
 
+  // Keep loading buttons focusable while preventing activation.
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     if (loading) {
       event.preventDefault();
@@ -46,30 +48,42 @@ export function Button({
   };
 
   return (
-    <Surface
-      as="button"
-      {...rest}
-      type={type}
-      shape={size === "sm" ? "diagonal-small" : "diagonal"}
-      keyline={
-        loading
-          ? "conic-gradient(from var(--ang), var(--sweepcol) 0 80deg, var(--edge) 80deg 360deg)"
-          : inert
-            ? "var(--color-line)"
-            : "conic-gradient(from -90deg, var(--sweepcol) 0 var(--sweep), var(--edge) var(--sweep) 360deg)"
-      }
-      fill={
-        inert
-          ? "repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background)"
-          : "var(--fill, var(--color-accent))"
-      }
-      className={cn(styles.button, styles[variant], styles[size], className)}
-      onClick={handleClick}
-      disabled={disabled}
-      aria-disabled={inert || undefined}
-      aria-busy={loading || undefined}
+    // Render the focus ring outside the clipped button surface.
+    <span
+      className={styles.focus}
+      style={{ "--focus-clip": `var(--clip-${shape})` } as CSSProperties}
     >
-      {children}
-    </Surface>
+      <Surface
+        as="button"
+        {...rest}
+        type={type}
+        shape={size === "sm" ? "diagonal-small" : "diagonal"}
+        keyline={
+          loading
+            ? "conic-gradient(from var(--ang), var(--sweepcol) 0 80deg, var(--edge) 80deg 360deg)"
+            : inert
+              ? "var(--color-line)"
+              : "conic-gradient(from -90deg, var(--sweepcol) 0 var(--sweep), var(--edge) var(--sweep) 360deg)"
+        }
+        fill={
+          disabled
+            ? "repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background)"
+            : "var(--fill, var(--color-accent))"
+        }
+        className={cn(styles.button, styles[variant], styles[size], className)}
+        onClick={handleClick}
+        disabled={disabled}
+        aria-disabled={inert || undefined}
+        aria-busy={loading || undefined}
+      >
+        <span className={styles.label}>{children}</span>
+        {/* Overlay the loader without changing the button width. */}
+        {loading && (
+          <span className={styles.cells} aria-hidden="true">
+            <i /><i /><i />
+          </span>
+        )}
+      </Surface>
+    </span>
   );
 }
