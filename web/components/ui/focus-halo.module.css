@@ -1,0 +1,40 @@
+/* Halo frame */
+.halo {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  padding: 4px;
+}
+
+/* Visible keyboard focus state */
+.halo:has(> :focus-visible) {
+  background: var(--color-foreground);
+  clip-path: var(--focus-clip);
+}
+
+/* Inner halo cutout */
+.halo:has(> :focus-visible)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  clip-path: var(--focus-clip-inner);
+  background: var(--color-background);
+}
+
+/* Native focus-ring replacement */
+@supports selector(:has(*)) {
+  .halo > :focus-visible { outline: none; }
+}
+
+/* Fallback for browsers without :has() */
+@supports not selector(:has(*)) {
+  .halo > :focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 3px; }
+}
+
+/* Windows high-contrast mode */
+@media (forced-colors: active) {
+  .halo:has(> :focus-visible) { background: none; clip-path: none; }
+  .halo:has(> :focus-visible)::before { display: none; }
+  .halo > :focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
+}

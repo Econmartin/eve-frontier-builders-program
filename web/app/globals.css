@@ -107,11 +107,25 @@
   --orange-900: #82230c;
   --orange-950: #460e04;
 
-  /* shapes */
-  --clip-card:           polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
-  --clip-card-small:     polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-  --clip-diagonal:       polygon(17px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 5px 100%, 0 calc(100% - 5px), 0 17px);
-  --clip-diagonal-small: polygon(12px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 4px 100%, 0 calc(100% - 4px), 0 12px);
+  /* outer shapes */
+  --clip-card:              polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  --clip-card-small:        polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  --clip-diagonal:          polygon(17px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 5px 100%, 0 calc(100% - 5px), 0 17px);
+  --clip-diagonal-small:    polygon(12px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 4px 100%, 0 calc(100% - 4px), 0 12px);
+
+  /* inset shapes */
+  --clip-diagonal-inner:          polygon(17.41px 1px, calc(100% - 5.41px) 1px, calc(100% - 1px) 5.41px, calc(100% - 1px) calc(100% - 17.41px), calc(100% - 17.41px) calc(100% - 1px), 5.41px calc(100% - 1px), 1px calc(100% - 5.41px), 1px 17.41px);
+  --clip-diagonal-inner-2:        polygon(17.83px 2px, calc(100% - 5.83px) 2px, calc(100% - 2px) 5.83px, calc(100% - 2px) calc(100% - 17.83px), calc(100% - 17.83px) calc(100% - 2px), 5.83px calc(100% - 2px), 2px calc(100% - 5.83px), 2px 17.83px);
+  --clip-diagonal-inner-3:        polygon(18.24px 3px, calc(100% - 6.24px) 3px, calc(100% - 3px) 6.24px, calc(100% - 3px) calc(100% - 18.24px), calc(100% - 18.24px) calc(100% - 3px), 6.24px calc(100% - 3px), 3px calc(100% - 6.24px), 3px 18.24px);
+  --clip-diagonal-small-inner:   polygon(12.41px 1px, calc(100% - 4.41px) 1px, calc(100% - 1px) 4.41px, calc(100% - 1px) calc(100% - 12.41px), calc(100% - 12.41px) calc(100% - 1px), 4.41px calc(100% - 1px), 1px calc(100% - 4.41px), 1px 12.41px);
+  --clip-diagonal-small-inner-2: polygon(12.83px 2px, calc(100% - 4.83px) 2px, calc(100% - 2px) 4.83px, calc(100% - 2px) calc(100% - 12.83px), calc(100% - 12.83px) calc(100% - 2px), 4.83px calc(100% - 2px), 2px calc(100% - 4.83px), 2px 12.83px);
+  --clip-diagonal-small-inner-3: polygon(13.24px 3px, calc(100% - 5.24px) 3px, calc(100% - 3px) 5.24px, calc(100% - 3px) calc(100% - 13.24px), calc(100% - 13.24px) calc(100% - 3px), 5.24px calc(100% - 3px), 3px calc(100% - 5.24px), 3px 13.24px);
+
+  /* focus halos */
+  --clip-diagonal-halo:             polygon(19.34px 0, calc(100% - 7.34px) 0, 100% 7.34px, 100% calc(100% - 19.34px), calc(100% - 19.34px) 100%, 7.34px 100%, 0 calc(100% - 7.34px), 0 19.34px);
+  --clip-diagonal-halo-inner:       polygon(20.17px 2px, calc(100% - 8.17px) 2px, calc(100% - 2px) 8.17px, calc(100% - 2px) calc(100% - 20.17px), calc(100% - 20.17px) calc(100% - 2px), 8.17px calc(100% - 2px), 2px calc(100% - 8.17px), 2px 20.17px);
+  --clip-diagonal-small-halo:       polygon(14.34px 0, calc(100% - 6.34px) 0, 100% 6.34px, 100% calc(100% - 14.34px), calc(100% - 14.34px) 100%, 6.34px 100%, 0 calc(100% - 6.34px), 0 14.34px);
+  --clip-diagonal-small-halo-inner: polygon(15.17px 2px, calc(100% - 7.17px) 2px, calc(100% - 2px) 7.17px, calc(100% - 2px) calc(100% - 15.17px), calc(100% - 15.17px) calc(100% - 2px), 7.17px calc(100% - 2px), 2px calc(100% - 7.17px), 2px 15.17px);
 
   /* layers */
   --layer-raised: 10;
@@ -194,4 +208,3 @@
 /* button animations */
 @property --sweep { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
 @property --ang   { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
-@property --key   { syntax: "<length>"; inherits: true;  initial-value: 1px;  }

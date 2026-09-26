@@ -1,7 +1,7 @@
 /* Base button */
 .button {
-  --key: 1px;
-  --surface-key: var(--key);
+  --surface-key: 0;
+  --surface-clip-inner: var(--clip-diagonal-inner);
   --sweep: 0deg;
   --ang: 0deg;
   display: inline-flex;
@@ -11,12 +11,12 @@
   cursor: pointer;
   white-space: nowrap;
   font-family: var(--font-body);
-  transition: --sweep .55s cubic-bezier(.2,.8,.2,1), --key .2s, color .2s, transform .12s;
+  transition: --sweep .55s cubic-bezier(.2,.8,.2,1), color .2s, transform .12s;
 }
 
 /* Pointer and keyboard interaction */
-.button:is(:hover, :focus-visible) { --sweep: 362deg; --key: 2px; }
-.button:active { --sweep: 362deg; --key: 3px; transform: translateY(1px); }
+.button:is(:hover, :focus-visible) { --sweep: 362deg; --surface-clip-inner: var(--clip-diagonal-inner-2); }
+.button:active { --sweep: 362deg; --surface-clip-inner: var(--clip-diagonal-inner-3); transform: translateY(1px); }
 .button:active::before { transition: none; }
 
 /* Visual variants */
@@ -26,14 +26,17 @@
 .secondary { --edge: var(--color-foreground); --sweepcol: var(--color-accent); --fill: var(--color-background); color: var(--color-foreground); }
 .secondary:active { --fill: var(--color-card-secondary); }
 
-/* Sizes */
-.sm { padding: 8px 16px;  min-height: 34px; font-size: 14px; }
+/* Sizes and inset shapes */
+.sm { --surface-clip-inner: var(--clip-diagonal-small-inner); padding: 8px 16px; min-height: 34px; font-size: 14px; }
 .md { padding: 12px 24px; min-height: 46px; font-size: 15px; }
 .lg { padding: 17px 24px; min-height: 56px; font-size: 16.5px; }
 
-/* Loading indicator preserves the label width */
+.sm:is(:hover, :focus-visible) { --surface-clip-inner: var(--clip-diagonal-small-inner-2); }
+.sm:active { --surface-clip-inner: var(--clip-diagonal-small-inner-3); }
+
+/* Loading indicator preserves the label width and accessible name */
 .label { display: inline-block; }
-.button[aria-busy="true"] .label { visibility: hidden; }
+.button[aria-busy="true"] .label { opacity: 0; }
 
 .cells {
   position: absolute;
@@ -45,29 +48,26 @@
   pointer-events: none;
 }
 
-.cells i {
-  width: 6px;
-  height: 6px;
-  background: currentColor;
-  animation: cell 1s infinite;
-}
-
+.cells i { width: 6px; height: 6px; background: currentColor; animation: cell 1s infinite; }
 .cells i:nth-child(2) { animation-delay: .16s; }
 .cells i:nth-child(3) { animation-delay: .32s; }
-
 @keyframes cell { 0%, 100% { opacity: .25; } 40% { opacity: 1; } }
 
 /* Disabled and busy states */
 .button:is(:disabled, [aria-disabled="true"]:not([aria-busy="true"])) {
   --sweep: 0deg;
-  --key: 1px;
+  --surface-clip-inner: var(--clip-diagonal-inner);
   color: var(--color-muted);
   cursor: not-allowed;
   transform: none;
 }
 
-.button[aria-busy="true"] { --key: 2px; cursor: progress; animation: radar 1.2s linear infinite; }
-@keyframes radar { to { --ang: 362deg; } }
+.button[aria-busy="true"] { --surface-clip-inner: var(--clip-diagonal-inner-2); cursor: progress; animation: radar 1.2s linear infinite; }
+
+/* Small-state inset overrides */
+.sm:is(:disabled, [aria-disabled="true"]:not([aria-busy="true"])) { --surface-clip-inner: var(--clip-diagonal-small-inner); }
+.sm[aria-busy="true"] { --surface-clip-inner: var(--clip-diagonal-small-inner-2); }
+@keyframes radar { to { --ang: 360deg; } }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -76,41 +76,9 @@
   .cells i { animation: none; opacity: .7; }
 }
 
-/* Clipped keyboard focus ring */
-.focus {
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  padding: 4px;
-}
-
-.focus:has(> .button:focus-visible) {
-  background: var(--color-foreground);
-  clip-path: var(--focus-clip);
-}
-
-.focus:has(> .button:focus-visible)::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  z-index: -1;
-  clip-path: inherit;
-  background: var(--color-background);
-}
-
-.button:focus-visible { outline: none; }
-
-/* Focus fallback for browsers without :has() */
-@supports not selector(:has(*)) {
-  .button:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 3px; }
-}
-
 /* Windows high-contrast mode */
 @media (forced-colors: active) {
-  .button { border: 1px solid ButtonText; }
-  .button:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
-   .button:is(:disabled, [aria-disabled="true"]:not([aria-busy="true"])) { border-color: GrayText; color: GrayText; }
-  .focus:has(> .button:focus-visible) { background: none; clip-path: none; }
-  .focus:has(> .button:focus-visible)::before { display: none; }
+  .button { border: 1px solid ButtonText; transition: none; }
+  .button:is(:disabled, [aria-disabled="true"]:not([aria-busy="true"])) { border-color: GrayText; color: GrayText; }
   .cells i { box-sizing: border-box; border: 3px solid ButtonText; background: none; }
 }

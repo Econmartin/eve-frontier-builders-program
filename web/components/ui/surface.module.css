@@ -1,6 +1,4 @@
-/* TODO: Replace with corner-shape: bevel once it ships beyond Chromium
-  border and outline follow the chamfer natively, and this file goes away.
-*/
+/* Replace with corner-shape: bevel once it ships beyond Chromium — border and outline follow the chamfer natively, and this file goes away. */
 
 /* Clipped surface frame */
 .surface {
@@ -16,9 +14,9 @@
   position: absolute;
   inset: var(--surface-key, 1px);
   z-index: -1;
-  clip-path: inherit;
+  clip-path: var(--surface-clip-inner, var(--surface-clip));
   background: var(--surface-fill, var(--color-card));
-  transition: background .2s;
+  transition: background .2s, clip-path .2s;
 }
 
 /* Reduced motion */
@@ -28,9 +26,6 @@
 
 /* Windows high-contrast mode */
 @media (forced-colors: active) {
-  .surface {
-    clip-path: none;
-    border: 1px solid CanvasText;
-  }
+  .surface { clip-path: none; border: 1px solid CanvasText; }
   .surface::before { display: none; }
 }

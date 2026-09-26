@@ -1,5 +1,6 @@
-import type { ComponentPropsWithRef, CSSProperties, MouseEvent } from "react";
+import type { ComponentPropsWithRef, MouseEvent } from "react";
 import { Surface } from "./surface";
+import { FocusHalo } from "./focus-halo";
 import { cn } from "@/lib/cn";
 import styles from "./button.module.css";
 
@@ -23,7 +24,6 @@ type ButtonProps = {
  * </Button>
  * ```
  */
-
 export function Button({
   variant = "primary",
   size = "md",
@@ -38,7 +38,6 @@ export function Button({
   const inert = disabled || loading;
   const shape = size === "sm" ? "diagonal-small" : "diagonal";
 
-  // Keep loading buttons focusable while preventing activation.
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     if (loading) {
       event.preventDefault();
@@ -48,16 +47,12 @@ export function Button({
   };
 
   return (
-    // Render the focus ring outside the clipped button surface.
-    <span
-      className={styles.focus}
-      style={{ "--focus-clip": `var(--clip-${shape})` } as CSSProperties}
-    >
+    <FocusHalo shape={shape}>
       <Surface
         as="button"
         {...rest}
         type={type}
-        shape={size === "sm" ? "diagonal-small" : "diagonal"}
+        shape={shape}
         keyline={
           loading
             ? "conic-gradient(from var(--ang), var(--sweepcol) 0 80deg, var(--edge) 80deg 360deg)"
@@ -77,13 +72,12 @@ export function Button({
         aria-busy={loading || undefined}
       >
         <span className={styles.label}>{children}</span>
-        {/* Overlay the loader without changing the button width. */}
         {loading && (
           <span className={styles.cells} aria-hidden="true">
             <i /><i /><i />
           </span>
         )}
       </Surface>
-    </span>
+    </FocusHalo>
   );
 }
