@@ -8,11 +8,28 @@ import type {
 import { cn } from "@/lib/cn";
 import styles from "./surface.module.css";
 
-type SurfaceShape = "card" | "card-small" | "diagonal" | "diagonal-small";
+type SurfaceShape =
+  | "card"
+  | "card-small"
+  | "diagonal"
+  | "diagonal-small"
+  | "interlock";
+
+type SurfaceInnerShape =
+  | SurfaceShape
+  | "diagonal-inner"
+  | "diagonal-inner-2"
+  | "diagonal-inner-3"
+  | "diagonal-small-inner"
+  | "diagonal-small-inner-2"
+  | "diagonal-small-inner-3"
+  | "interlock-inner"
+  | "interlock-inner-2";
 
 interface SurfaceOwnProps<T extends ElementType> {
   as?: T;
   shape?: SurfaceShape;
+  innerShape?: SurfaceInnerShape;
   keyline?: CSSProperties["background"];
   fill?: CSSProperties["background"];
   children?: ReactNode;
@@ -38,13 +55,13 @@ type SurfaceProps<T extends ElementType> = SurfaceOwnProps<T> &
  * </Surface>
  * ```
  */
-
 export function Surface<T extends ElementType = "div">(
   props: SurfaceProps<T>,
 ) {
   const {
     as,
     shape = "card",
+    innerShape,
     keyline,
     fill,
     children,
@@ -63,6 +80,9 @@ export function Surface<T extends ElementType = "div">(
         {
           ...style,
           "--surface-clip": `var(--clip-${shape})`,
+          ...(innerShape
+            ? { "--surface-clip-inner": `var(--clip-${innerShape})` }
+            : null),
           ...(keyline ? { "--surface-keyline": keyline } : null),
           ...(fill ? { "--surface-fill": fill } : null),
         } as CSSProperties
