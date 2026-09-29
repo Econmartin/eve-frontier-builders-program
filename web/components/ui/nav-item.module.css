@@ -30,6 +30,8 @@
   letter-spacing: 0.02em;
   line-height: 1;
   color: var(--color-foreground);
+  border: 0;
+  cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
   transition: background .2s;

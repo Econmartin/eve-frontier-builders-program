@@ -3,14 +3,23 @@ import { Surface } from "./surface";
 import { cn } from "@/lib/cn";
 import styles from "./nav-item.module.css";
 
-type NavItemProps = {
+type NavItemOwnProps = {
   first?: boolean;
   current?: boolean;
+  indicator?: ReactNode;
   children: ReactNode;
-} & Omit<ComponentPropsWithRef<"a">, "style">;
+};
+
+type NavItemProps = NavItemOwnProps &
+  (
+    | ({ as?: "a" } & Omit<ComponentPropsWithRef<"a">, "style">)
+    | ({ as: "button" } & Omit<ComponentPropsWithRef<"button">, "style">)
+  );
 
 /**
  * An interlocking navigation link intended for use inside `NavList`.
+ *
+ * Renders a button with `as="button"`; `indicator` replaces the lamp.
  *
  * @example
  * ```tsx
@@ -21,22 +30,24 @@ type NavItemProps = {
  * ```
  */
 export function NavItem({
+  as = "a",
   first = false,
   current = false,
+  indicator,
   className,
   children,
   ...rest
 }: NavItemProps) {
   return (
     <Surface
-      as="a"
+      as={as}
       {...rest}
       shape={first ? "diagonal" : "interlock"}
       fill={current ? "var(--color-card)" : "var(--color-background)"}
       className={cn(styles.item, !first && styles.linked, className)}
       aria-current={current ? "page" : undefined}
     >
-      <span className={styles.lamp} aria-hidden="true" />
+      {indicator ?? <span className={styles.lamp} aria-hidden="true" />}
       {children}
     </Surface>
   );
