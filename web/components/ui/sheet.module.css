@@ -1,0 +1,136 @@
+/* Dots button, the trigger and the close */
+.dots {
+  --surface-key: 0;
+  --surface-clip-inner: var(--clip-diagonal-small-inner);
+  --surface-keyline: var(--color-control-line);
+  --surface-fill: var(--color-background);
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  padding: 0;
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+
+.dots:hover { --surface-keyline: var(--color-foreground); }
+
+.dots:focus-visible {
+  --surface-clip-inner: var(--clip-diagonal-small-inner-2);
+  --surface-keyline: var(--color-foreground);
+  outline: none;
+}
+
+.grid {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.grid i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 3px;
+  height: 3px;
+  border: 1.5px solid currentColor;
+  transform: translate(var(--gx), var(--gy));
+  transition: transform .32s cubic-bezier(.2,.7,.2,1);
+}
+
+.cross i { transform: translate(var(--xx), var(--xy)); }
+.popup:is([data-starting-style], [data-ending-style]) .cross i { transform: translate(var(--gx), var(--gy)); }
+
+/* Scrim */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--layer-scrim);
+  background: color-mix(in srgb, var(--color-background) 45%, transparent);
+  transition: opacity .3s;
+}
+
+.backdrop:is([data-starting-style], [data-ending-style]) { opacity: 0; }
+
+/* Panel, from the top of the screen so its header row sits over the bar */
+.popup {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: var(--layer-scrim);
+  max-height: 100dvh;
+  overflow-y: auto;
+  outline: none;
+  transition: opacity .1s .34s;
+}
+
+/* Closing: the panel holds while the content folds and the cross unwinds, then
+   drops over the bar it matches. Base UI waits on this element's own transitions. */
+.popup[data-ending-style] { opacity: 0; }
+
+.title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+  max-width: var(--container-grid);
+  min-height: var(--bar-height, 64px);
+  margin-inline: auto;
+  padding-inline: var(--spacing-s-l);
+  background: var(--color-background);
+}
+
+/* Content, which drops open below the bar row */
+.body {
+  display: grid;
+  grid-template-rows: 1fr;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-background);
+  transition: grid-template-rows .3s cubic-bezier(.2,.7,.2,1);
+}
+
+.popup:is([data-starting-style], [data-ending-style]) .body { grid-template-rows: 0fr; }
+
+.clip {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.content {
+  display: grid;
+  gap: var(--spacing-s);
+  max-width: var(--container-grid);
+  margin-inline: auto;
+  padding: var(--spacing-s) var(--spacing-s-l) var(--spacing-m);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .grid i,
+  .backdrop,
+  .popup,
+  .body { transition: none; }
+}
+
+/* Windows high-contrast mode */
+@media (forced-colors: active) {
+  .grid i,
+  .backdrop,
+  .popup,
+  .body { transition: none; }
+  .dots:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+  .body { border-bottom-color: CanvasText; }
+}
