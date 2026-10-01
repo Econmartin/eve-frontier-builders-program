@@ -133,7 +133,7 @@
 }
 
 /* The bar keeps the brand and the dots; the Sheet carries the rest */
-@container topbar (max-width: 700px) {
+@media (width < 768px) {
   .tabs,
   .measure,
   .search,

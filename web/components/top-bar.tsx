@@ -23,12 +23,12 @@ type TopBarProps = {
   search?: { action: string; name?: string };
 };
 
-const NARROW = 700;
+const NARROW = "(width < 768px)";
 const OVERLAP = 10;
 const EDITABLE = "input, textarea, select, [contenteditable]:not([contenteditable='false'])";
 
 /**
- * The site's top bar. Tabs that don't fit fold into More in order; under 700px
+ * The site's top bar. Tabs that don't fit fold into More in order; under 768px
  * everything moves into the Sheet.
  *
  * @example
@@ -67,9 +67,9 @@ export function TopBar({
     if (!header || !inner || !measure) return;
 
     const layout = () => {
-      const width = header.clientWidth;
-      setNarrow(width <= NARROW);
-      if (width <= NARROW) return;
+      const isNarrow = matchMedia(NARROW).matches;
+      setNarrow(isNarrow);
+      if (isNarrow) return;
       setSheetOpen(false);
 
       const cs = getComputedStyle(inner);
