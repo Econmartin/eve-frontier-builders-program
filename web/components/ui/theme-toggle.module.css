@@ -12,9 +12,7 @@
   cursor: pointer;
 }
 
-.toggle svg { width: 20px; height: 20px; }
-.toggle circle { fill: none; stroke: currentColor; stroke-width: 1.5; }
-.toggle path { fill: currentColor; }
+.toggle canvas { display: block; width: 40px; height: 40px; }
 
 .toggle:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 3px; }
 

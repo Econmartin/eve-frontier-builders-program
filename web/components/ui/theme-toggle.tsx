@@ -1,7 +1,8 @@
 "use client";
 
-import { useSyncExternalStore, type ComponentPropsWithRef } from "react";
+import { useEffect, useRef, useSyncExternalStore, type ComponentPropsWithRef } from "react";
 import { cn } from "@/lib/cn";
+import { mountEclipse } from "./eclipse";
 import styles from "./theme-toggle.module.css";
 
 type Theme = "light" | "dark";
@@ -28,16 +29,42 @@ function subscribe(onChange: () => void) {
 /**
  * Switches between light and dark themes and remembers the choice.
  *
- * The root layout applies a saved choice before first paint.
+ * The root layout applies a saved choice before first paint. The mark is the
+ * Eclipse: a sun in light, crossed by an ink body in dark, lit on hover and focus.
  *
  * @example
  * ```tsx
  * <ThemeToggle />
  * ```
  */
-export function ThemeToggle({ className, ...rest }: Omit<ComponentPropsWithRef<"button">, "onClick">) {
+export function ThemeToggle({
+  className,
+  ...rest
+}: Omit<ComponentPropsWithRef<"button">, "onClick" | "ref">) {
   const theme = useSyncExternalStore(subscribe, readTheme, () => null);
   const next: Theme = theme === "dark" ? "light" : "dark";
+
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const eclipseRef = useRef<ReturnType<typeof mountEclipse> | null>(null);
+  const painted = useRef(false);
+
+  useEffect(() => {
+    if (!buttonRef.current || !canvasRef.current) return;
+    const eclipse = mountEclipse(canvasRef.current, buttonRef.current);
+    eclipseRef.current = eclipse;
+    return () => {
+      eclipse.destroy();
+      eclipseRef.current = null;
+      painted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!theme) return;
+    eclipseRef.current?.set(theme === "dark", !painted.current);
+    painted.current = true;
+  }, [theme]);
 
   const toggle = () => {
     document.documentElement.dataset.theme = next;
@@ -48,16 +75,14 @@ export function ThemeToggle({ className, ...rest }: Omit<ComponentPropsWithRef<"
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       {...rest}
       className={cn(styles.toggle, className)}
       aria-label={theme ? `Switch to ${next} theme` : "Switch theme"}
       onClick={toggle}
     >
-      <svg viewBox="0 0 20 20" aria-hidden="true">
-        <circle cx="10" cy="10" r="7" />
-        <path d="M10 3a7 7 0 0 1 0 14z" />
-      </svg>
+      <canvas ref={canvasRef} aria-hidden="true" />
     </button>
   );
 }
