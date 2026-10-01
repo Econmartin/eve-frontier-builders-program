@@ -4,11 +4,21 @@ import { FocusHalo } from "./focus-halo";
 import { cn } from "@/lib/cn";
 import styles from "./button.module.css";
 
-type ButtonProps = {
+type ButtonOwnProps = {
   variant?: "primary" | "secondary";
   size?: "sm" | "md" | "lg";
+};
+
+type ActionProps = ButtonOwnProps & {
+  href?: undefined;
   loading?: boolean;
 } & Omit<ComponentPropsWithRef<"button">, "style">;
+
+type LinkProps = ButtonOwnProps & { href: string } & Omit<ComponentPropsWithRef<"a">, "style">;
+
+type ButtonProps = ActionProps | LinkProps;
+
+const SWEEP = "conic-gradient(from -90deg, var(--sweepcol) 0 var(--sweep), var(--edge) var(--sweep) 360deg)";
 
 /**
  * An animated action button built on `Surface`.
@@ -22,9 +32,36 @@ type ButtonProps = {
  * <Button variant="secondary" loading>
  *   Saving
  * </Button>
+ *
+ * <Button variant="secondary" size="sm" href="/sign-in">
+ *   Sign in
+ * </Button>
  * ```
  */
-export function Button({
+export function Button(props: ButtonProps) {
+  return props.href === undefined ? <ActionButton {...props} /> : <LinkButton {...props} />;
+}
+
+function LinkButton({ variant = "primary", size = "md", className, children, ...rest }: LinkProps) {
+  const shape = size === "sm" ? "diagonal-small" : "diagonal";
+
+  return (
+    <FocusHalo shape={shape}>
+      <Surface
+        as="a"
+        {...rest}
+        shape={shape}
+        keyline={SWEEP}
+        fill="var(--fill, var(--color-accent))"
+        className={cn(styles.button, styles[variant], styles[size], className)}
+      >
+        <span className={styles.label}>{children}</span>
+      </Surface>
+    </FocusHalo>
+  );
+}
+
+function ActionButton({
   variant = "primary",
   size = "md",
   loading = false,
@@ -34,7 +71,7 @@ export function Button({
   onClick,
   children,
   ...rest
-}: ButtonProps) {
+}: ActionProps) {
   const inert = disabled || loading;
   const shape = size === "sm" ? "diagonal-small" : "diagonal";
 
@@ -58,7 +95,7 @@ export function Button({
             ? "conic-gradient(from var(--ang), var(--sweepcol) 0 80deg, var(--edge) 80deg 360deg)"
             : inert
               ? "var(--color-line)"
-              : "conic-gradient(from -90deg, var(--sweepcol) 0 var(--sweep), var(--edge) var(--sweep) 360deg)"
+              : SWEEP
         }
         fill={
           disabled

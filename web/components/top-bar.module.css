@@ -1,0 +1,148 @@
+/* Bar */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--layer-sticky);
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-background);
+  container: topbar / inline-size;
+}
+
+.inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: var(--container-grid);
+  height: var(--bar-height);
+  margin-inline: auto;
+  padding-inline: var(--spacing-s-l);
+}
+
+.brand {
+  flex: none;
+  font-family: var(--font-heading);
+  font-size: clamp(34px, 4.8vw, 68px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--color-foreground);
+  text-decoration: none;
+}
+
+/* The Sheet portals out of the bar's container, so its copy takes the narrow size directly */
+.sheetBrand { font-size: 44px; }
+
+.brand:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 4px; }
+
+/* Tabs, above the search field so More's foot covers the field's */
+.tabs {
+  position: relative;
+  z-index: 1;
+}
+
+/* Off-screen copy of every tab and More, measured to decide what fits */
+.measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.caretSlot { flex: none; width: 0.42em; }
+
+/* Search, tucked under More */
+.search {
+  display: flex;
+  flex: 1 1 200px;
+  min-width: 200px;
+  margin-left: calc(7px - 17px - 14px);
+}
+
+.field { flex: 1; }
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.compact {
+  display: none;
+  margin-left: auto;
+}
+
+/* Sheet contents */
+.sheetTabs {
+  --nav-item-size: 30px;
+  --nav-item-pad: 26px;
+  display: grid;
+  gap: 8px;
+}
+
+.secondary {
+  display: grid;
+  border-top: 1px solid var(--color-line);
+  padding-top: 8px;
+}
+
+.secondary a {
+  position: relative;
+  padding: 12px 14px 12px 26px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.secondary a::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  margin-top: -1.5px;
+  border: 1.5px solid currentColor;
+  opacity: 0.6;
+}
+
+.secondary a:is(:hover, [aria-current]) { color: var(--color-foreground); }
+.secondary a:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: -2px; }
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid var(--color-line);
+  padding-top: 16px;
+}
+
+/* A size step before a tab step */
+@container topbar (max-width: 1280px) {
+  .inner { --nav-item-pad: 18px; }
+  .brand { font-size: 52px; }
+}
+
+@container topbar (max-width: 860px) {
+  .inner { --nav-item-size: 18px; --nav-item-pad: 16px; }
+  .brand { font-size: 44px; }
+}
+
+/* The bar keeps the brand and the dots; the Sheet carries the rest */
+@container topbar (max-width: 700px) {
+  .tabs,
+  .measure,
+  .search,
+  .right { display: none; }
+  .compact { display: block; }
+}
+
+/* Windows high-contrast mode */
+@media (forced-colors: active) {
+  .brand:focus-visible,
+  .secondary a:focus-visible { outline-color: Highlight; }
+}

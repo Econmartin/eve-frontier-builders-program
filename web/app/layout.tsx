@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { TopBar } from "@/components/top-bar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,6 +13,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+/* Applies a saved theme before first paint; with none saved, the system preference applies */
+const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+
+const TABS = [
+  { label: "Pathways", href: "/pathways" },
+  { label: "Courses", href: "/courses" },
+  { label: "Docs", href: "/docs" },
+];
+
+const SECONDARY = [
+  { label: "Glossary", href: "/glossary" },
+  { label: "About", href: "/about" },
+];
+
 export const metadata: Metadata = {
   title: "EVE Frontier Builders",
   description: "A learning and enablement hub for EVE Frontier builders.",
@@ -22,8 +37,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
+      <body className="min-h-full flex flex-col">
+        <TopBar brand={{ label: "EF-B", href: "/" }} tabs={TABS} secondary={SECONDARY} />
+        {children}
+      </body>
     </html>
   );
 }

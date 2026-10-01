@@ -1,0 +1,24 @@
+/* Theme switch */
+.toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+
+.toggle svg { width: 20px; height: 20px; }
+.toggle circle { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.toggle path { fill: currentColor; }
+
+.toggle:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 3px; }
+
+/* Windows high-contrast mode */
+@media (forced-colors: active) {
+  .toggle:focus-visible { outline-color: Highlight; }
+}

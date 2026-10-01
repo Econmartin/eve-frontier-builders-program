@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import {
+  useRef,
+  useState,
+  type ComponentProps,
+  type CSSProperties,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { Surface } from "./surface";
 import styles from "./sheet.module.css";
@@ -8,6 +15,9 @@ import styles from "./sheet.module.css";
 type SheetProps = {
   label: string;
   header?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialFocus?: ComponentProps<typeof Dialog.Popup>["initialFocus"];
   children: ReactNode;
 };
 
@@ -24,8 +34,15 @@ type SheetProps = {
  * </Sheet>
  * ```
  */
-export function Sheet({ label, header, children }: SheetProps) {
-  const [open, setOpen] = useState(false);
+export function Sheet({ label, header, open: openProp, onOpenChange, initialFocus, children }: SheetProps) {
+  const [openState, setOpenState] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const open = openProp ?? openState;
+
+  const setOpen = (next: boolean) => {
+    setOpenState(next);
+    onOpenChange?.(next);
+  };
 
   const closeOnLink = (event: MouseEvent<HTMLDivElement>) => {
     if ((event.target as Element).closest("a[href]")) setOpen(false);
@@ -41,11 +58,12 @@ export function Sheet({ label, header, children }: SheetProps) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop className={styles.backdrop} />
-        <Dialog.Popup className={styles.popup}>
+        <Dialog.Popup className={styles.popup} initialFocus={initialFocus ?? closeRef}>
           <Dialog.Title className={styles.title}>{label}</Dialog.Title>
           <div className={styles.bar}>
             {header}
             <Dialog.Close
+              ref={closeRef}
               render={<Surface as="button" shape="diagonal-small" className={styles.dots} />}
               aria-label={`Close ${label.toLowerCase()}`}
             >

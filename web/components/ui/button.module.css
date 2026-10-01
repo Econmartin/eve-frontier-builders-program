@@ -10,6 +10,7 @@
   border: 0;
   cursor: pointer;
   white-space: nowrap;
+  text-decoration: none;
   font-family: var(--font-body);
   transition: --sweep .55s cubic-bezier(.2,.8,.2,1), color .2s, transform .12s;
 }
