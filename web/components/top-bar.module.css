@@ -5,10 +5,12 @@
   z-index: var(--layer-sticky);
   border-bottom: 1px solid var(--color-line);
   background: var(--color-background);
-  container: topbar / inline-size;
 }
 
+/* Tab size is fluid from 900px to lg, so tabs shrink before they fold into More */
 .inner {
+  --nav-item-size: clamp(18px, 0.667vw + 12px, 20px);
+  --nav-item-pad: clamp(16px, 2vw - 2px, 22px);
   position: relative;
   display: flex;
   align-items: center;
@@ -22,7 +24,7 @@
 .brand {
   flex: none;
   font-family: var(--font-heading);
-  font-size: clamp(34px, 4.8vw, 68px);
+  font-size: clamp(44px, 4.8vw, 68px);
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -30,9 +32,6 @@
   color: var(--color-foreground);
   text-decoration: none;
 }
-
-/* The Sheet portals out of the bar's container, so its copy takes the narrow size directly */
-.sheetBrand { font-size: 44px; }
 
 .brand:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 4px; }
 
@@ -119,17 +118,6 @@
   gap: 10px;
   border-top: 1px solid var(--color-line);
   padding-top: 16px;
-}
-
-/* A size step before a tab step */
-@container topbar (max-width: 1280px) {
-  .inner { --nav-item-pad: 18px; }
-  .brand { font-size: 52px; }
-}
-
-@container topbar (max-width: 860px) {
-  .inner { --nav-item-size: 18px; --nav-item-pad: 16px; }
-  .brand { font-size: 44px; }
 }
 
 /* The bar keeps the brand and the dots; the Sheet carries the rest */

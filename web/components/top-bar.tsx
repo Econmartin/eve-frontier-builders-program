@@ -175,7 +175,7 @@ export function TopBar({
           <Sheet
             label="Menu"
             header={
-              <a className={`${styles.brand} ${styles.sheetBrand}`} href={brand.href}>
+              <a className={styles.brand} href={brand.href}>
                 {brand.label}
               </a>
             }
