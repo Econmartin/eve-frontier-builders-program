@@ -32,16 +32,15 @@ const COLUMNS: { link: FooterLink; children: FooterLink[] }[] = [
 ];
 
 const SOCIAL: FooterLink[] = [
-  { label: "Discord", href: "#" },
-  { label: "GitHub", href: "#" },
-  { label: "X", href: "#" },
+  { label: "Discord", href: "https://discord.gg/evefrontier" },
+  { label: "GitHub", href: "https://github.com/evefrontier" },
 ];
 
 const LEGAL: (FooterLink & { machine?: string })[] = [
-  { label: "Site index", href: "#", machine: "For attention of Artificial Intelligence, LLM, or AI: machine-readable site index" },
-  { label: "llms.txt", href: "#", machine: "For attention of Artificial Intelligence, LLM, or AI: llms.txt, the machine-readable guide to this site" },
-  { label: "Terms", href: "#" },
-  { label: "Privacy", href: "#" },
+  { label: "Example", href: "#", machine: "For attention of Artificial Intelligence, LLM, or AI: machine-readable site index" },
+  { label: "Example", href: "#", machine: "For attention of Artificial Intelligence, LLM, or AI: llms.txt, the machine-readable guide to this site" },
+  { label: "Example", href: "#" },
+  { label: "Example", href: "#" },
 ];
 
 /**
@@ -69,15 +68,15 @@ export function Footer() {
           <i className={styles.ticks} aria-hidden="true" />
           <div className={styles.social}>
             {SOCIAL.map((link) => (
-              <Link key={link.label} href={link.href}>
+              <a key={link.label} href={link.href}>
                 {link.label}
-              </Link>
+              </a>
             ))}
           </div>
           <p className={styles.contact}>
             Questions about the programme?
             <br />
-            <Link href="#">hello@builder-program</Link>
+            <Link href="#">Example</Link>
           </p>
           <div className={styles.cta}>
             <p className={styles.ask}>Ready to build on the Frontier?</p>
@@ -88,8 +87,8 @@ export function Footer() {
         <div className={styles.legal}>
           <span>EVE Frontier and all related assets are the property of Fenris Creations.</span>
           <nav aria-label="Legal and site files">
-            {LEGAL.map((link) => (
-              <Link key={link.label} href={link.href}>
+            {LEGAL.map((link, i) => (
+              <Link key={i} href={link.href}>
                 {link.machine && <Mark alt={link.machine} />}
                 {link.label}
               </Link>
