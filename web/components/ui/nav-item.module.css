@@ -23,7 +23,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 11px var(--nav-item-pad, 22px);
+  padding: var(--nav-item-pad-y, 12px) var(--nav-item-pad, 24px);
   font-family: var(--font-heading);
   font-size: var(--nav-item-size, 20px);
   font-weight: 700;
@@ -40,7 +40,7 @@
 /* Interlocking items */
 .linked {
   --surface-clip-inner: var(--clip-interlock-inner);
-  padding-left: calc(var(--nav-item-pad, 22px) + 12px);
+  padding-left: calc(var(--nav-item-pad, 24px) + 12px);
   margin-left: calc(var(--nav-gap) - var(--nav-overlap));
 }
 
@@ -90,7 +90,7 @@
   /* the interlock exists only as clip-path, which forced-colors drops — the
      negative margin then reads as doubled borders, so space them instead */
   .list { gap: 6px; }
-  .linked { margin-left: 0; padding-left: var(--nav-item-pad, 22px); }
+  .linked { margin-left: 0; padding-left: var(--nav-item-pad, 24px); }
 
   /* the hover/focus lamp rule outranks a bare .lamp here, and its background
      would be forced to a background colour, i.e. invisible */

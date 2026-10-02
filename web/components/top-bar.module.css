@@ -10,7 +10,7 @@
 /* Tab size is fluid from 900px to lg, so tabs shrink before they fold into More */
 .inner {
   --nav-item-size: clamp(18px, 0.667vw + 12px, 20px);
-  --nav-item-pad: clamp(16px, 2vw - 2px, 22px);
+  --nav-item-pad: clamp(16px, 2.667vw - 8px, 24px);
   position: relative;
   display: flex;
   align-items: center;
@@ -74,7 +74,7 @@
 /* Sheet contents */
 .sheetTabs {
   --nav-item-size: 30px;
-  --nav-item-pad: 26px;
+  --nav-item-pad: 24px;
   display: grid;
   gap: 8px;
 }
