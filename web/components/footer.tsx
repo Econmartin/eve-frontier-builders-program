@@ -8,24 +8,24 @@ const COLUMNS: { link: FooterLink; children: FooterLink[] }[] = [
   {
     link: { label: "Pathways", href: "/pathways" },
     children: [
-      { label: "Non-developer", href: "/pathways" },
-      { label: "Builder", href: "/pathways" },
-      { label: "Advanced", href: "/pathways" },
+      { label: "Example", href: "/pathways" },
+      { label: "Example", href: "/pathways" },
+      { label: "Example", href: "/pathways" },
     ],
   },
   {
     link: { label: "Courses", href: "/courses" },
     children: [
-      { label: "Foundations", href: "/courses" },
-      { label: "All modules", href: "/courses" },
+      { label: "Example", href: "/courses" },
+      { label: "Example", href: "/courses" },
     ],
   },
   {
     link: { label: "Documentation", href: "/docs" },
     children: [
       { label: "Glossary", href: "/glossary" },
-      { label: "World API", href: "/docs" },
-      { label: "Starter repo", href: "/docs" },
+      { label: "Example", href: "/docs" },
+      { label: "Example", href: "/docs" },
     ],
   },
   { link: { label: "About", href: "/about" }, children: [] },
@@ -56,8 +56,8 @@ export function Footer() {
           {COLUMNS.map(({ link, children }) => (
             <div key={link.label} className={styles.column}>
               <Link href={link.href}>{link.label}</Link>
-              {children.map((child) => (
-                <Link key={child.label} href={child.href} className={styles.child}>
+              {children.map((child, i) => (
+                <Link key={i} href={child.href} className={styles.child}>
                   {child.label}
                 </Link>
               ))}
