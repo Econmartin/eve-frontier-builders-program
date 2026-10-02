@@ -1,9 +1,9 @@
 "use client";
 
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Form from "next/form";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Field,
   Menu,
@@ -60,7 +60,9 @@ export function TopBar({
   const measureRef = useRef<HTMLElement>(null);
   const searchRef = useRef<HTMLFormElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLInputElement>(null);
   const sheetFieldRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState("");
   const [focusField, setFocusField] = useState(false);
 
   useLayoutEffect(() => {
@@ -115,7 +117,10 @@ export function TopBar({
   const shown = tabs.slice(0, visible);
   const hidden = tabs.slice(visible);
   const hasMore = hidden.length > 0 || secondary.length > 0;
-  const trim = (path: string) => path.replace(/\/+$/, "") || "/";
+  useEffect(() => {
+    if (fieldRef.current && document.activeElement !== fieldRef.current) fieldRef.current.value = query;
+  }, [query]);
+
   const isCurrent = (href: string) => trim(href) === trim(pathname);
   const name = search.name ?? "q";
 
@@ -125,6 +130,9 @@ export function TopBar({
 
   return (
     <header ref={headerRef} className={styles.header}>
+      <Suspense fallback={null}>
+        <SearchQuery path={search.action} name={name} onQuery={setQuery} />
+      </Suspense>
       <div ref={innerRef} className={cn("container gutter", styles.inner)}>
         <Link ref={brandRef} className={styles.brand} href={brand.href}>
           {brand.label}
@@ -169,6 +177,7 @@ export function TopBar({
 
         <Form ref={searchRef} className={styles.search} action={search.action} role="search">
           <Field
+            ref={fieldRef}
             interlock
             name={name}
             placeholder="Search, or ask"
@@ -201,7 +210,13 @@ export function TopBar({
                 setSheetOpen(false);
                 setFocusField(false);
               }}>
-              <Field ref={sheetFieldRef} name={name} placeholder="Search, or ask" aria-label="Search, or ask the assistant" />
+              <Field
+                ref={sheetFieldRef}
+                name={name}
+                defaultValue={query}
+                placeholder="Search, or ask"
+                aria-label="Search, or ask the assistant"
+              />
             </Form>
             <nav aria-label="Primary" className={styles.sheetTabs}>
               {tabs.map((tab) => (
@@ -212,15 +227,18 @@ export function TopBar({
             </nav>
             {secondary.length > 0 && (
               <nav aria-label="Secondary" className={styles.secondary}>
-                {secondary.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={link.sub ? styles.sub : undefined}
-                    aria-current={isCurrent(link.href) ? "page" : undefined}
-                  >
-                    {link.label}
-                  </Link>
+                {secondary.map((link, i) => (
+                  <Fragment key={link.href}>
+                    {startsGroup(i) && <hr className={styles.rule} />}
+                    <Link
+                      href={link.href}
+                      className={link.sub ? styles.sub : undefined}
+                      aria-current={isCurrent(link.href) ? "page" : undefined}
+                    >
+                      {link.sub && <span className={styles.branch} aria-hidden="true" />}
+                      {link.label}
+                    </Link>
+                  </Fragment>
                 ))}
               </nav>
             )}
@@ -232,4 +250,22 @@ export function TopBar({
       </div>
     </header>
   );
+}
+
+const trim = (path: string) => path.replace(/\/+$/, "") || "/";
+
+/* Reads the search query from the URL on the results page, so the fields show what was searched.
+   Kept apart in its own Suspense: reading search params opts a static page out of prerendering
+   up to the nearest boundary, and this way that's only this empty component, not the bar */
+function SearchQuery({ path, name, onQuery }: { path: string; name: string; onQuery: (query: string) => void }) {
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const query = params.get(name) ?? "";
+  const onSearchPage = trim(pathname) === trim(path);
+
+  useEffect(() => {
+    if (onSearchPage) onQuery(query);
+  }, [onSearchPage, query, onQuery]);
+
+  return null;
 }

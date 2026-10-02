@@ -87,28 +87,57 @@
 
 .secondary a {
   position: relative;
-  padding: 12px 14px 12px 26px;
+  padding: 12px 16px 12px 28px;
   font-size: 15px;
   font-weight: 700;
+  line-height: 20px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-muted);
   text-decoration: none;
 }
 
+/* Bullet, 4px on the same grid as the menu lamps */
 .secondary a::before {
   content: "";
   position: absolute;
-  top: 50%;
-  left: 10px;
-  margin-top: -1.5px;
-  border: 1.5px solid currentColor;
+  top: calc(50% - 2px);
+  left: 12px;
+  border: 2px solid currentColor;
   opacity: 0.6;
 }
 
-/* Child links, indented under the link before them */
+/* Child links: the bullet sits where the parent's text starts */
 .secondary .sub { padding-left: 44px; }
 .secondary .sub::before { left: 28px; }
+
+/* Branch from below the parent's bullet to the child's, as in the menu */
+.branch {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 13px;
+  width: 11px;
+  pointer-events: none;
+}
+
+.branch::before,
+.branch::after {
+  content: "";
+  position: absolute;
+}
+
+.branch::before { top: -16px; bottom: calc(50% - 1px); left: 0; border-left: 2px solid var(--color-line); }
+.branch::after { top: calc(50% - 1px); right: 0; left: 2px; border-top: 2px solid var(--color-line); }
+.sub:has(+ .sub) .branch::before { bottom: 0; }
+.sub + .sub .branch::before { top: 0; }
+
+/* Divider between a parent's group and the links around it */
+.rule {
+  margin: 4px 0;
+  border: 0;
+  border-top: 1px solid var(--color-line);
+}
 
 .secondary a:is(:hover, [aria-current]) { color: var(--color-foreground); }
 .secondary a:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: -2px; }
@@ -134,4 +163,7 @@
 @media (forced-colors: active) {
   .brand:focus-visible,
   .secondary a:focus-visible { outline-color: Highlight; }
+  .branch::before,
+  .branch::after,
+  .rule { border-color: CanvasText; }
 }
