@@ -198,6 +198,18 @@
   --color-illustration-hatch:     #8a887d;
 }
 
+/* layout: the grid's width, and the page gutter inside it */
+@utility container {
+  width: 100%;
+  max-width: var(--container-grid);
+  margin-inline: auto;
+  overflow-x: clip;
+}
+
+@utility gutter {
+  padding-inline: var(--spacing-s-l);
+}
+
 @layer base {
   body {
     background: var(--color-background);

@@ -1,6 +1,7 @@
 "use client";
 
-import type { ComponentProps, ReactNode } from "react";
+import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
+import Link from "next/link";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { NavItem } from "./nav-item";
 import { Surface } from "./surface";
@@ -17,6 +18,7 @@ type MenuProps = {
  * A navigation dropdown whose trigger interlocks with `NavItem`s in a `NavList`.
  *
  * The popup portals to the body, so the bar's `clip-path` can't cut it off.
+ * It closes when the window's width changes, since its contents and anchor move.
  *
  * @example
  * ```tsx
@@ -31,8 +33,21 @@ type MenuProps = {
  * ```
  */
 export function Menu({ label, first = false, children }: MenuProps) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const width = window.innerWidth;
+    /* Width only: mobile browsers fire resize when their toolbar or keyboard shows */
+    const onResize = () => {
+      if (window.innerWidth !== width) setOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [open]);
+
   return (
-    <BaseMenu.Root modal={false}>
+    <BaseMenu.Root modal={false} open={open} onOpenChange={setOpen}>
       <BaseMenu.Trigger
         openOnHover
         closeDelay={240}
@@ -70,11 +85,20 @@ type MenuLinkProps = {
 } & ComponentProps<typeof BaseMenu.LinkItem>;
 
 /** A link inside `Menu`; `sub` indents it under the link before, `current` marks the page. */
-export function MenuLink({ sub = false, current = false, className, ...rest }: MenuLinkProps) {
+export function MenuLink({
+  sub = false,
+  current = false,
+  href,
+  render,
+  className,
+  children,
+  ...rest
+}: MenuLinkProps) {
   return (
     <BaseMenu.LinkItem
       closeOnClick
       {...rest}
+      render={render ?? (href ? <Link href={href} /> : undefined)}
       aria-current={current ? "page" : undefined}
       className={(state) =>
         cn(
@@ -84,7 +108,11 @@ export function MenuLink({ sub = false, current = false, className, ...rest }: M
           typeof className === "function" ? className(state) : className,
         )
       }
-    />
+    >
+      {sub && <span className={styles.branch} aria-hidden="true" />}
+      <span className={styles.lamp} aria-hidden="true" />
+      {children}
+    </BaseMenu.LinkItem>
   );
 }
 

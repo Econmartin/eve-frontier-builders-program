@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { Surface } from "./surface";
+import { cn } from "@/lib/cn";
 import styles from "./sheet.module.css";
 
 type SheetProps = {
@@ -60,7 +61,7 @@ export function Sheet({ label, header, open: openProp, onOpenChange, initialFocu
         <Dialog.Backdrop className={styles.backdrop} />
         <Dialog.Popup className={styles.popup} initialFocus={initialFocus ?? closeRef}>
           <Dialog.Title className={styles.title}>{label}</Dialog.Title>
-          <div className={styles.bar}>
+          <div className={cn("container gutter", styles.bar)}>
             {header}
             <Dialog.Close
               ref={closeRef}
@@ -72,7 +73,7 @@ export function Sheet({ label, header, open: openProp, onOpenChange, initialFocu
           </div>
           <div className={styles.body}>
             <div className={styles.clip}>
-              <div className={styles.content} onClick={closeOnLink}>
+              <div className={cn("container gutter", styles.content)} onClick={closeOnLink}>
                 {children}
               </div>
             </div>

@@ -86,10 +86,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-s);
-  max-width: var(--container-grid);
   min-height: var(--bar-height, 64px);
-  margin-inline: auto;
-  padding-inline: var(--spacing-s-l);
   background: var(--color-background);
 }
 
@@ -112,9 +109,7 @@
 .content {
   display: grid;
   gap: var(--spacing-s);
-  max-width: var(--container-grid);
-  margin-inline: auto;
-  padding: var(--spacing-s) var(--spacing-s-l) var(--spacing-m);
+  padding-block: var(--spacing-s) var(--spacing-m);
 }
 
 /* Reduced motion */

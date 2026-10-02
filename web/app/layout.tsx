@@ -19,16 +19,16 @@ const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t=
 const TABS = [
   { label: "Pathways", href: "/pathways" },
   { label: "Courses", href: "/courses" },
-  { label: "Docs", href: "/docs" },
 ];
 
 const SECONDARY = [
-  { label: "Glossary", href: "/glossary" },
+  { label: "Documentation", href: "/docs" },
+  { label: "Glossary", href: "/glossary", sub: true },
   { label: "About", href: "/about" },
 ];
 
 export const metadata: Metadata = {
-  title: "EVE Frontier Builders",
+  title: { default: "EVE Frontier Builders", template: "%s · EVE Frontier Builders" },
   description: "A learning and enablement hub for EVE Frontier builders.",
 };
 

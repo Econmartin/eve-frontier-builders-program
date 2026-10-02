@@ -1,4 +1,5 @@
-import type { ComponentPropsWithRef, ReactNode } from "react";
+import type { ComponentPropsWithRef, ElementType, ReactNode } from "react";
+import Link from "next/link";
 import { Surface } from "./surface";
 import { cn } from "@/lib/cn";
 import styles from "./nav-item.module.css";
@@ -19,7 +20,8 @@ type NavItemProps = NavItemOwnProps &
 /**
  * An interlocking navigation link intended for use inside `NavList`.
  *
- * Renders a button with `as="button"`; `indicator` replaces the lamp.
+ * Links go through Next's `Link`. Renders a button with `as="button"`;
+ * `indicator` replaces the lamp.
  *
  * @example
  * ```tsx
@@ -38,9 +40,11 @@ export function NavItem({
   children,
   ...rest
 }: NavItemProps) {
+  const Component: ElementType = as === "button" ? "button" : "href" in rest && rest.href ? Link : "a";
+
   return (
     <Surface
-      as={as}
+      as={Component}
       {...rest}
       shape={first ? "diagonal" : "interlock"}
       fill={current ? "var(--color-card)" : "var(--color-background)"}

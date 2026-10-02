@@ -47,12 +47,14 @@
   --link-clip: polygon(3px 2px, calc(100% - 3px) 2px, calc(100% - 3px) calc(100% - 2px), 3px calc(100% - 2px));
   position: relative;
   isolation: isolate;
-  display: block;
-  padding: 11px 19px;
-  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px 10px 16px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  line-height: 1.3;
+  line-height: 20px;
   text-transform: uppercase;
   color: var(--color-foreground);
   text-decoration: none;
@@ -74,27 +76,54 @@
 .link:first-child { --link-clip: polygon(3px 3px, calc(100% - 19.24px) 3px, calc(100% - 3px) 19.24px, calc(100% - 3px) calc(100% - 2px), 3px calc(100% - 2px)); }
 .link:last-child { --link-clip: polygon(3px 2px, calc(100% - 3px) 2px, calc(100% - 3px) calc(100% - 3px), 19.24px calc(100% - 3px), 3px calc(100% - 19.24px)); }
 
-/* Child links, indented under the link before them */
-.sub { padding-left: 37px; }
-
-/* Current page, marked like the current tab: grey fill and a lit lamp */
-.current { --link-fill: var(--color-card); background: var(--link-fill); }
-
-.current::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 8px;
+/* Lamp, as on the tabs: dark at rest, lit on hover, focus and the current page */
+.lamp {
+  flex: none;
   width: 4px;
-  height: 0.62em;
-  transform: translateY(-50%);
+  height: 8px;
+  background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
+  transition: background .14s ease, box-shadow .14s ease;
+}
+
+.link:is([data-highlighted], :focus-visible) .lamp,
+.current .lamp {
   background: var(--color-accent);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
     0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
 }
 
-.sub.current::after { left: 26px; }
+/* Child links: the lamp sits where the parent's text starts */
+.sub { padding-left: 32px; }
+
+/* Branch from below the parent's lamp to the child's, 2px so it centres on the 4px lamp */
+.branch {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 17px;
+  width: 11px;
+  pointer-events: none;
+}
+
+.branch::before,
+.branch::after {
+  content: "";
+  position: absolute;
+}
+
+/* The line colour is translucent, so the two strokes must never overlap: the
+   vertical one runs to the foot of the tick, and the tick starts beside it */
+.branch::before { top: -12px; bottom: calc(50% - 1px); left: 0; border-left: 2px solid var(--color-line); }
+.branch::after { top: calc(50% - 1px); right: 0; left: 2px; border-top: 2px solid var(--color-line); }
+
+/* More children: the line carries on to the next one, which picks it up at its own top */
+.sub:has(+ .sub) .branch::before { bottom: 0; }
+.sub + .sub .branch::before { top: 0; }
+
+/* Current page, marked like the current tab: grey fill, and its lamp lit */
+.current { --link-fill: var(--color-card); background: var(--link-fill); }
 
 .link[data-highlighted] { --link-fill: var(--color-card); background: var(--link-fill); color: var(--color-foreground); }
 .link:focus-visible { --link-fill: var(--color-card); --link-ring: var(--color-foreground); background: var(--link-ring); color: var(--color-foreground); }
@@ -109,6 +138,7 @@
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .caret,
+  .lamp,
   .popup { transition: none; }
 }
 
@@ -120,5 +150,9 @@
   .link::before { display: none; }
   .link[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
   .separator { border-top-color: CanvasText; }
-  .current::after { box-sizing: border-box; border-left: 4px solid Highlight; background: none; box-shadow: none; }
+  .lamp { background: ButtonText; box-shadow: none; transition: none; }
+  .link:is([data-highlighted], :focus-visible) .lamp,
+  .current .lamp { background: Highlight; box-shadow: none; }
+  .branch::before,
+  .branch::after { border-color: CanvasText; }
 }

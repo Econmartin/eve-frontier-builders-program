@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import Form from "next/form";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Field,
@@ -12,14 +14,15 @@ import {
   Sheet,
   ThemeToggle,
 } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import styles from "./top-bar.module.css";
 
-type Link = { label: string; href: string };
+type NavLink = { label: string; href: string };
 
 type TopBarProps = {
-  brand: Link;
-  tabs: Link[];
-  secondary?: (Link & { sub?: boolean })[];
+  brand: NavLink;
+  tabs: NavLink[];
+  secondary?: (NavLink & { sub?: boolean })[];
   search?: { action: string; name?: string };
 };
 
@@ -112,15 +115,20 @@ export function TopBar({
   const shown = tabs.slice(0, visible);
   const hidden = tabs.slice(visible);
   const hasMore = hidden.length > 0 || secondary.length > 0;
-  const isCurrent = (href: string) => href === pathname;
+  const trim = (path: string) => path.replace(/\/+$/, "") || "/";
+  const isCurrent = (href: string) => trim(href) === trim(pathname);
   const name = search.name ?? "q";
+
+  /* A parent and its children form a group, divided from the links on either side */
+  const startsGroup = (i: number) =>
+    i > 0 && !secondary[i].sub && Boolean(secondary[i - 1].sub || secondary[i + 1]?.sub);
 
   return (
     <header ref={headerRef} className={styles.header}>
-      <div ref={innerRef} className={styles.inner}>
-        <a ref={brandRef} className={styles.brand} href={brand.href}>
+      <div ref={innerRef} className={cn("container gutter", styles.inner)}>
+        <Link ref={brandRef} className={styles.brand} href={brand.href}>
           {brand.label}
-        </a>
+        </Link>
 
         <NavList aria-label="Primary" className={styles.tabs}>
           {shown.map((tab, i) => (
@@ -136,10 +144,13 @@ export function TopBar({
                 </MenuLink>
               ))}
               {hidden.length > 0 && secondary.length > 0 && <MenuSeparator />}
-              {secondary.map((link) => (
-                <MenuLink key={link.href} href={link.href} sub={link.sub} current={isCurrent(link.href)}>
-                  {link.label}
-                </MenuLink>
+              {secondary.map((link, i) => (
+                <Fragment key={link.href}>
+                  {startsGroup(i) && <MenuSeparator />}
+                  <MenuLink href={link.href} sub={link.sub} current={isCurrent(link.href)}>
+                    {link.label}
+                  </MenuLink>
+                </Fragment>
               ))}
             </Menu>
           )}
@@ -156,7 +167,7 @@ export function TopBar({
           </NavItem>
         </NavList>
 
-        <form ref={searchRef} className={styles.search} action={search.action} method="get" role="search">
+        <Form ref={searchRef} className={styles.search} action={search.action} role="search">
           <Field
             interlock
             name={name}
@@ -165,7 +176,7 @@ export function TopBar({
             shortcut={narrow ? undefined : "/"}
             className={styles.field}
           />
-        </form>
+        </Form>
 
         <div ref={rightRef} className={styles.right}>
           <ThemeToggle />
@@ -175,9 +186,9 @@ export function TopBar({
           <Sheet
             label="Menu"
             header={
-              <a className={styles.brand} href={brand.href}>
+              <Link className={styles.brand} href={brand.href}>
                 {brand.label}
-              </a>
+              </Link>
             }
             open={sheetOpen}
             onOpenChange={(open) => {
@@ -186,9 +197,12 @@ export function TopBar({
             }}
             initialFocus={focusField ? sheetFieldRef : undefined}
           >
-            <form action={search.action} method="get" role="search">
+            <Form action={search.action} role="search" onSubmit={() => {
+                setSheetOpen(false);
+                setFocusField(false);
+              }}>
               <Field ref={sheetFieldRef} name={name} placeholder="Search, or ask" aria-label="Search, or ask the assistant" />
-            </form>
+            </Form>
             <nav aria-label="Primary" className={styles.sheetTabs}>
               {tabs.map((tab) => (
                 <NavItem key={tab.href} href={tab.href} first current={isCurrent(tab.href)}>
@@ -199,9 +213,14 @@ export function TopBar({
             {secondary.length > 0 && (
               <nav aria-label="Secondary" className={styles.secondary}>
                 {secondary.map((link) => (
-                  <a key={link.href} href={link.href} aria-current={isCurrent(link.href) ? "page" : undefined}>
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={link.sub ? styles.sub : undefined}
+                    aria-current={isCurrent(link.href) ? "page" : undefined}
+                  >
                     {link.label}
-                  </a>
+                  </Link>
                 ))}
               </nav>
             )}

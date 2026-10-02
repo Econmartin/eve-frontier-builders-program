@@ -1,4 +1,5 @@
 import type { ComponentPropsWithRef, MouseEvent } from "react";
+import Link from "next/link";
 import { Surface } from "./surface";
 import { FocusHalo } from "./focus-halo";
 import { cn } from "@/lib/cn";
@@ -48,7 +49,7 @@ function LinkButton({ variant = "primary", size = "md", className, children, ...
   return (
     <FocusHalo shape={shape}>
       <Surface
-        as="a"
+        as={Link}
         {...rest}
         shape={shape}
         keyline={SWEEP}
