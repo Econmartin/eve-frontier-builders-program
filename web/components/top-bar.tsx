@@ -1,11 +1,13 @@
 "use client";
 
-import { Fragment, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Form from "next/form";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  AskEye,
   Field,
+  isQuestion,
   Menu,
   MenuLink,
   MenuSeparator,
@@ -63,6 +65,8 @@ export function TopBar({
   const fieldRef = useRef<HTMLInputElement>(null);
   const sheetFieldRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
+  /* Both fields share one eye state, as in the prototype: it thinks while a question is typed */
+  const [asking, setAsking] = useState(false);
   const [focusField, setFocusField] = useState(false);
 
   useLayoutEffect(() => {
@@ -121,6 +125,13 @@ export function TopBar({
     if (fieldRef.current && document.activeElement !== fieldRef.current) fieldRef.current.value = query;
   }, [query]);
 
+  const onQuery = useCallback((next: string) => {
+    setQuery(next);
+    setAsking(isQuestion(next));
+  }, []);
+
+  const onType = (event: { target: HTMLInputElement }) => setAsking(isQuestion(event.target.value));
+
   const isCurrent = (href: string) => trim(href) === trim(pathname);
   const name = search.name ?? "q";
 
@@ -131,7 +142,7 @@ export function TopBar({
   return (
     <header ref={headerRef} className={styles.header}>
       <Suspense fallback={null}>
-        <SearchQuery path={search.action} name={name} onQuery={setQuery} />
+        <SearchQuery path={search.action} name={name} onQuery={onQuery} />
       </Suspense>
       <div ref={innerRef} className={cn("container gutter", styles.inner)}>
         <Link ref={brandRef} className={styles.brand} href={brand.href}>
@@ -179,6 +190,8 @@ export function TopBar({
           <Field
             ref={fieldRef}
             interlock
+            start={<AskEye thinking={asking} />}
+            onChange={onType}
             name={name}
             placeholder="Search, or ask"
             aria-label="Search, or ask the assistant"
@@ -212,6 +225,8 @@ export function TopBar({
               }}>
               <Field
                 ref={sheetFieldRef}
+                start={<AskEye thinking={asking} />}
+                onChange={onType}
                 name={name}
                 defaultValue={query}
                 placeholder="Search, or ask"

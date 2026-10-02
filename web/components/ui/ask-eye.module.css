@@ -1,0 +1,22 @@
+/* Eye button */
+.eye {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  padding: 0;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.eye canvas { display: block; width: 30px; height: 30px; }
+
+.eye:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 0; }
+
+/* Windows high-contrast mode */
+@media (forced-colors: active) {
+  .eye:focus-visible { outline-color: Highlight; }
+}

@@ -6,3 +6,4 @@ export { Field } from "./field";
 export { Menu, MenuLink, MenuSeparator } from "./menu";
 export { Sheet } from "./sheet";
 export { ThemeToggle } from "./theme-toggle";
+export { AskEye, isQuestion } from "./ask-eye";
