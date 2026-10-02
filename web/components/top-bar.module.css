@@ -97,21 +97,31 @@
   text-decoration: none;
 }
 
-/* Bullet, 4px on the same grid as the menu lamps */
+/* Lamp, as on the tabs and in the menu: dark at rest, lit on hover, focus and the current page */
 .secondary a::before {
   content: "";
   position: absolute;
-  top: calc(50% - 2px);
+  top: calc(50% - 4px);
   left: 12px;
-  border: 2px solid currentColor;
-  opacity: 0.6;
+  width: 4px;
+  height: 8px;
+  background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
+  transition: background .14s ease, box-shadow .14s ease;
 }
 
-/* Child links: the bullet sits where the parent's text starts */
+.secondary a:is(:hover, :focus-visible, [aria-current])::before {
+  background: var(--color-accent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
+    0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+/* Child links: the lamp sits where the parent's text starts */
 .secondary .sub { padding-left: 44px; }
 .secondary .sub::before { left: 28px; }
 
-/* Branch from below the parent's bullet to the child's, as in the menu */
+/* Branch from below the parent's lamp to the child's, as in the menu */
 .branch {
   position: absolute;
   top: 0;
@@ -127,7 +137,7 @@
   position: absolute;
 }
 
-.branch::before { top: -16px; bottom: calc(50% - 1px); left: 0; border-left: 2px solid var(--color-line); }
+.branch::before { top: -14px; bottom: calc(50% - 1px); left: 0; border-left: 2px solid var(--color-line); }
 .branch::after { top: calc(50% - 1px); right: 0; left: 2px; border-top: 2px solid var(--color-line); }
 .sub:has(+ .sub) .branch::before { bottom: 0; }
 .sub + .sub .branch::before { top: 0; }
@@ -159,6 +169,11 @@
   .compact { display: block; }
 }
 
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .secondary a::before { transition: none; }
+}
+
 /* Windows high-contrast mode */
 @media (forced-colors: active) {
   .brand:focus-visible,
@@ -166,4 +181,6 @@
   .branch::before,
   .branch::after,
   .rule { border-color: CanvasText; }
+  .secondary a::before { background: ButtonText; box-shadow: none; transition: none; }
+  .secondary a:is(:hover, :focus-visible, [aria-current])::before { background: Highlight; box-shadow: none; }
 }
