@@ -13,7 +13,8 @@ type SurfaceShape =
   | "card-small"
   | "diagonal"
   | "diagonal-small"
-  | "interlock";
+  | "interlock"
+  | "panel";
 
 type SurfaceInnerShape =
   | SurfaceShape

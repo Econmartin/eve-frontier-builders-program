@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Footer } from "@/components/footer";
 import { TopBar } from "@/components/top-bar";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <TopBar brand={{ label: "EF-B", href: "/" }} tabs={TABS} secondary={SECONDARY} />
         {children}
+        <Footer />
       </body>
     </html>
   );

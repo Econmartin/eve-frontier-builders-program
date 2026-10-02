@@ -110,11 +110,13 @@
   /* outer shapes */
   --clip-card:              polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
   --clip-card-small:        polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  --clip-panel:             polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% calc(100% - 12px), 64% calc(100% - 12px), 64% 100%, 0 100%);
   --clip-diagonal:          polygon(17px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 5px 100%, 0 calc(100% - 5px), 0 17px);
   --clip-diagonal-small:    polygon(12px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 4px 100%, 0 calc(100% - 4px), 0 12px);
   --clip-interlock:         polygon(12px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%, 17px calc(100% - 17px), 17px 5px);
 
   /* inset shapes */
+  --clip-panel-inner:             polygon(1px 1px, calc(100% - 20.41px) 1px, calc(100% - 1px) 20.41px, calc(100% - 1px) calc(100% - 13px), calc(64% - 1px) calc(100% - 13px), calc(64% - 1px) calc(100% - 1px), 1px calc(100% - 1px));
   --clip-card-inner:              polygon(1px 1px, calc(100% - 18.41px) 1px, calc(100% - 1px) 18.41px, calc(100% - 1px) calc(100% - 1px), 18.41px calc(100% - 1px), 1px calc(100% - 18.41px));
   --clip-diagonal-inner:          polygon(17.41px 1px, calc(100% - 5.41px) 1px, calc(100% - 1px) 5.41px, calc(100% - 1px) calc(100% - 17.41px), calc(100% - 17.41px) calc(100% - 1px), 5.41px calc(100% - 1px), 1px calc(100% - 5.41px), 1px 17.41px);
   --clip-diagonal-inner-2:        polygon(17.83px 2px, calc(100% - 5.83px) 2px, calc(100% - 2px) 5.83px, calc(100% - 2px) calc(100% - 17.83px), calc(100% - 17.83px) calc(100% - 2px), 5.83px calc(100% - 2px), 2px calc(100% - 5.83px), 2px 17.83px);
@@ -171,8 +173,9 @@
   }
 }
 
-/* dark mode: explicit */
-:root[data-theme="dark"] {
+/* dark mode: explicit, on the page or on one element (the footer is always dark) */
+:root[data-theme="dark"],
+[data-theme="dark"] {
   --color-background: var(--neutral-crude);
   --color-foreground: var(--neutral-cream);
   --color-card: #171716;
