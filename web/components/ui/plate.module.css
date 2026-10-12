@@ -1,0 +1,65 @@
+/* TODO: Replace with corner-shape: bevel once it ships beyond Chromium —
+  border and outline follow the chamfer natively, and this file goes away.
+*/
+
+/* Plate polygon, built from --cut-{tl,tr,br,bl} and inset by --_k.
+  Declared on both layers so each resolves it against its own --_k. */
+.plate,
+.plate::before {
+  --_tl: max(var(--_k), calc(var(--cut-tl, 0px) + var(--_k) * 0.41421));
+  --_tr: max(var(--_k), calc(var(--cut-tr, 0px) + var(--_k) * 0.41421));
+  --_br: max(var(--_k), calc(var(--cut-br, 0px) + var(--_k) * 0.41421));
+  --_bl: max(var(--_k), calc(var(--cut-bl, 0px) + var(--_k) * 0.41421));
+  --_plate: polygon(
+    var(--_tl) var(--_k),
+    calc(100% - var(--_tr)) var(--_k),
+    calc(100% - var(--_k)) var(--_tr),
+    calc(100% - var(--_k)) calc(100% - var(--_br)),
+    calc(100% - var(--_br)) calc(100% - var(--_k)),
+    var(--_bl) calc(100% - var(--_k)),
+    var(--_k) calc(100% - var(--_bl)),
+    var(--_k) var(--_tl)
+  );
+}
+
+/* Clipped plate frame */
+.plate {
+  --_k: 0px;
+  position: relative;
+  isolation: isolate;
+  clip-path: var(--plate-clip, var(--_plate));
+  background: var(--plate-keyline, var(--color-line));
+}
+
+/* Inset fill layer */
+.plate::before {
+  --_k: var(--plate-keyline-width, 1px);
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  clip-path: var(--plate-clip-inner, var(--_plate));
+  background: var(--plate-fill, var(--color-card));
+  transition: background .2s, clip-path .2s;
+}
+
+/* Corners — zero specificity so a component's own cuts win */
+:where(.tl, .tl-br) { --cut-tl: var(--_cut); }
+:where(.tr, .tr-bl) { --cut-tr: var(--_cut); }
+:where(.br, .tl-br) { --cut-br: var(--_cut); }
+:where(.bl, .tr-bl) { --cut-bl: var(--_cut); }
+
+/* Cuts */
+:where(.sm) { --_cut: var(--cut-sm); }
+:where(.md) { --_cut: var(--cut-md); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .plate::before { transition: none; }
+}
+
+/* Windows high-contrast mode */
+@media (forced-colors: active) {
+  .plate { clip-path: none; border: 1px solid CanvasText; }
+  .plate::before { display: none; }
+}

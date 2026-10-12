@@ -107,11 +107,9 @@
   --orange-900: #82230c;
   --orange-950: #460e04;
 
-  /* shapes */
-  --clip-card:           polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
-  --clip-card-small:     polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-  --clip-diagonal:       polygon(17px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 5px 100%, 0 calc(100% - 5px), 0 17px);
-  --clip-diagonal-small: polygon(12px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 4px 100%, 0 calc(100% - 4px), 0 12px);
+  /* corner cuts */
+  --cut-sm: 12px;
+  --cut-md: 20px;
 
   /* layers */
   --layer-raised: 10;
