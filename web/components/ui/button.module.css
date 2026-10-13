@@ -1,4 +1,4 @@
-/* Animated custom properties. Registered globally, so they are prefixed. */
+/* @property registers globally, hence the prefix */
 @property --btn-sweep { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
 @property --btn-ang   { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
 @property --btn-key   { syntax: "<length>"; inherits: false; initial-value: 1px; }
@@ -24,7 +24,7 @@
     transition: --btn-sweep .55s cubic-bezier(.2,.8,.2,1), --btn-key .2s, color .2s;
   }
 
-  /* Pointer and keyboard interaction. Hover is gated so it can't stick after a tap. */
+  /* Hover is gated so it can't stick after a tap */
   @media (hover: hover) {
     .button:hover { --btn-sweep: 362deg; --btn-key: 2px; }
   }
@@ -36,7 +36,6 @@
   /* ::before is the Plate fill layer; pressing swaps the fill instantly */
   .button:active::before { transition: none; }
 
-  /* Visual variants */
   .primary {
     --btn-edge: var(--color-accent);
     --btn-sweep-color: var(--color-foreground);
@@ -53,10 +52,8 @@
   }
   .secondary:active { --btn-fill: var(--color-card-secondary); }
 
-  /* Sizes, on the type and space scales with line-height 1. Small and
-    Medium share a label size and differ by padding, as GOV.UK does. Medium
-    is floored at 44px, the WCAG 2.5.5 and Apple HIG touch target; Small is
-    a dense desktop size and Large exceeds the floor from its tokens alone. */
+  /* Sizes come from the type and space tokens. Medium is floored at the
+    44px WCAG 2.5.5 touch target; Small is a dense desktop size. */
   .focus.sm { --btn-cut-big: 12px; --btn-cut-small: 4px; }
   .button.sm { padding: var(--spacing-2xs) var(--spacing-s); font-size: var(--text-step--1); }
   .button.md { padding: var(--spacing-xs) var(--spacing-m);  font-size: var(--text-step--1); min-height: 2.75rem; }
@@ -88,7 +85,6 @@
 
   @keyframes cell { 0%, 100% { opacity: .25; } 40% { opacity: 1; } }
 
-  /* Busy: a radar sweep on the keyline, no activation */
   .button[aria-busy="true"] {
     --plate-keyline: conic-gradient(from var(--btn-ang), var(--btn-sweep-color) 0 80deg, var(--btn-edge) 80deg 360deg);
     --btn-key: 2px;
@@ -97,7 +93,6 @@
   }
   @keyframes radar { to { --btn-ang: 362deg; } }
 
-  /* Disabled: flat keyline and hatched fill */
   .button:disabled {
     --plate-keyline: var(--color-line);
     --plate-fill: repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background);
@@ -129,7 +124,6 @@
   /* Fill the wrapper so the ring hugs the button when a parent stretches it */
   .focus > .button { flex: 1; }
 
-  /* Pressing drops the button and its ring together */
   .focus:has(> .button:active:not(:disabled, [aria-busy="true"])) {
     transform: translateY(1px);
   }
@@ -147,14 +141,12 @@
     .button:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: -5px; }
   }
 
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     .button, .button:focus-visible, .focus { transition: none; }
     .button[aria-busy="true"] { animation: none; }
     .cells > span { animation: none; opacity: .7; }
   }
 
-  /* Windows high-contrast mode */
   @media (forced-colors: active) {
     .button { border: 1px solid ButtonText; }
     .button:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }

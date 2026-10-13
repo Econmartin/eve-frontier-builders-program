@@ -69,7 +69,6 @@ export function Button({
         {busy && (
           <>
             <span className="sr-only">, loading</span>
-            {/* Overlay the loader without changing the button width. */}
             <span className={styles.cells} aria-hidden="true">
               <span />
               <span />
