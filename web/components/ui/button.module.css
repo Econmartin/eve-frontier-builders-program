@@ -1,4 +1,5 @@
-/* @property registers globally, hence the prefix */
+/* @property registers globally, hence the prefix. The var() fallbacks below
+  keep the button drawn where @property is unsupported, minus the easing. */
 @property --btn-sweep { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
 @property --btn-ang   { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
 @property --btn-key   { syntax: "<length>"; inherits: false; initial-value: 1px; }
@@ -7,8 +8,8 @@
 @layer components {
   /* Base button — the 17/5 octagon, 12/4 at Small (see .sm) */
   .button {
-    --plate-keyline-width: var(--btn-key);
-    --plate-keyline: conic-gradient(from -90deg, var(--btn-sweep-color) 0 var(--btn-sweep), var(--btn-edge) var(--btn-sweep) 360deg);
+    --plate-keyline-width: var(--btn-key, 1px);
+    --plate-keyline: conic-gradient(from -90deg, var(--btn-sweep-color) 0 var(--btn-sweep, 0deg), var(--btn-edge) var(--btn-sweep, 0deg) 360deg);
     --plate-fill: var(--btn-fill);
     --cut-tl: var(--btn-cut-big);
     --cut-br: var(--btn-cut-big);
@@ -86,7 +87,7 @@
   @keyframes cell { 0%, 100% { opacity: .25; } 40% { opacity: 1; } }
 
   .button[aria-busy="true"] {
-    --plate-keyline: conic-gradient(from var(--btn-ang), var(--btn-sweep-color) 0 80deg, var(--btn-edge) 80deg 360deg);
+    --plate-keyline: conic-gradient(from var(--btn-ang, 0deg), var(--btn-sweep-color) 0 80deg, var(--btn-edge) 80deg 360deg);
     --btn-key: 2px;
     cursor: progress;
     animation: radar 1.2s linear infinite;
