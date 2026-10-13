@@ -53,12 +53,14 @@
   }
   .secondary:active { --btn-fill: var(--color-card-secondary); }
 
-  /* Sizes, on the type and space scales. With line-height 1 the min-height
-    sets the rendered height until the padding outgrows it. */
+  /* Sizes, on the type and space scales with line-height 1. Small and
+    Medium share a label size and differ by padding, as GOV.UK does. Medium
+    is floored at 44px, the WCAG 2.5.5 and Apple HIG touch target; Small is
+    a dense desktop size and Large exceeds the floor from its tokens alone. */
   .focus.sm { --btn-cut-big: 12px; --btn-cut-small: 4px; }
-  .button.sm { padding: var(--spacing-2xs) var(--spacing-s); min-height: 2.125rem; font-size: var(--text-step--2); }
-  .button.md { padding: var(--spacing-xs) var(--spacing-m);  min-height: 2.875rem; font-size: var(--text-step--1); }
-  .button.lg { padding: var(--spacing-s) var(--spacing-m);   min-height: 3.5rem;   font-size: var(--text-step-0); }
+  .button.sm { padding: var(--spacing-2xs) var(--spacing-s); font-size: var(--text-step--1); }
+  .button.md { padding: var(--spacing-xs) var(--spacing-m);  font-size: var(--text-step--1); min-height: 2.75rem; }
+  .button.lg { padding: var(--spacing-s) var(--spacing-m);   font-size: var(--text-step-0); }
 
   /* Loading indicator preserves the label width and its accessible name */
   .label { display: inline-block; }
