@@ -13,11 +13,6 @@ const twMerge = extendTailwindMerge({
       ],
     },
   },
-  // The step sizes set no line-height, so a leading-* class must survive
-  // beside a text-step-* class instead of being dropped as a conflict.
-  override: {
-    conflictingClassGroups: { "font-size": [] },
-  },
 });
 
 export function cn(...inputs: ClassValue[]) {

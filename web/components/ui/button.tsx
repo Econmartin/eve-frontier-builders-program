@@ -13,9 +13,9 @@ export type ButtonProps = {
 
 /* Medium is floored at the 44px WCAG 2.5.5 touch target; Small is a dense desktop size. */
 const sizes = {
-  sm: "px-s py-2xs text-step--1",
-  md: "px-m py-xs text-step--1 min-h-[2.75rem]",
-  lg: "px-m py-s text-step-0",
+  sm: "px-s py-2xs text-step--1 leading-none",
+  md: "px-m py-xs text-step--1 leading-none min-h-[2.75rem]",
+  lg: "px-m py-s text-step-0 leading-none",
 };
 
 const variants = {
@@ -79,7 +79,7 @@ export function Button({
         {...rest}
         type={type}
         className={cn(
-          "group inline-flex flex-1 items-center justify-center whitespace-nowrap leading-none",
+          "group inline-flex flex-1 items-center justify-center whitespace-nowrap",
           "cursor-pointer aria-busy:cursor-progress disabled:cursor-not-allowed disabled:text-muted",
           styles.button,
           styles[variant],
