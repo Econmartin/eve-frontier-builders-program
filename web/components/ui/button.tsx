@@ -5,7 +5,7 @@ import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./button.module.css";
 
-type ButtonProps = {
+export type ButtonProps = {
   variant?: "primary" | "secondary";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
@@ -13,6 +13,10 @@ type ButtonProps = {
 
 /**
  * An animated action button built on `Plate`.
+ *
+ * `className` styles the button itself. The focus ring wraps it in a
+ * content-sized element, so layout utilities such as `w-full` belong on a
+ * parent that stretches its children.
  *
  * @example
  * ```tsx
@@ -25,7 +29,6 @@ type ButtonProps = {
  * </Button>
  * ```
  */
-
 export function Button({
   variant = "primary",
   size = "md",
@@ -37,11 +40,12 @@ export function Button({
   children,
   ...rest
 }: ButtonProps) {
-  const inert = disabled || loading;
+  // Disabled wins over loading.
+  const busy = loading && !disabled;
 
-  // Keep loading buttons focusable while preventing activation.
+  // Keep busy buttons focusable while preventing activation.
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    if (loading) {
+    if (busy) {
       event.preventDefault();
       return;
     }
@@ -55,30 +59,23 @@ export function Button({
         as="button"
         {...rest}
         type={type}
-        keyline={
-          loading
-            ? "conic-gradient(from var(--ang), var(--sweepcol) 0 80deg, var(--edge) 80deg 360deg)"
-            : inert
-              ? "var(--color-line)"
-              : "conic-gradient(from -90deg, var(--sweepcol) 0 var(--sweep), var(--edge) var(--sweep) 360deg)"
-        }
-        fill={
-          disabled
-            ? "repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background)"
-            : "var(--fill, var(--color-accent))"
-        }
         className={cn(styles.button, styles[variant], styles[size], className)}
         onClick={handleClick}
         disabled={disabled}
-        aria-disabled={inert || undefined}
-        aria-busy={loading || undefined}
+        aria-disabled={busy || undefined}
+        aria-busy={busy || undefined}
       >
         <span className={styles.label}>{children}</span>
-        {/* Overlay the loader without changing the button width. */}
-        {loading && (
-          <span className={styles.cells} aria-hidden="true">
-            <i /><i /><i />
-          </span>
+        {busy && (
+          <>
+            <span className="sr-only">, loading</span>
+            {/* Overlay the loader without changing the button width. */}
+            <span className={styles.cells} aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </>
         )}
       </Plate>
     </Plate>

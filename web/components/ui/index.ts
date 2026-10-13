@@ -1,2 +1,2 @@
-export { Plate } from "./plate";
-export { Button } from "./button";
+export { Plate, type PlateProps } from "./plate";
+export { Button, type ButtonProps } from "./button";
