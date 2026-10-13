@@ -22,11 +22,16 @@ interface PlateOwnProps<T extends ElementType> {
   style?: CSSProperties;
 }
 
-export type PlateProps<T extends ElementType> = PlateOwnProps<T> &
+export type PlateProps<T extends ElementType = "div"> = PlateOwnProps<T> &
   Omit<ComponentPropsWithRef<T>, keyof PlateOwnProps<T>>;
 
 /**
  * A plate: a keyline and fill clipped to one corner or a diagonal pair.
+ *
+ * The clip cuts off anything outside the polygon — outlines, box shadows and
+ * overflowing children — so components draw focus inside the plate (a thicker
+ * keyline) or wrap it. The keyline is painted under the fill, so a translucent
+ * `fill` shows the keyline colour through it.
  *
  * @example
  * ```tsx
