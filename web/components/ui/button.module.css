@@ -4,7 +4,9 @@
 @property --btn-ang   { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
 @property --btn-key   { syntax: "<length>"; inherits: false; initial-value: 1px; }
 
-/* Layered so Tailwind utilities (in @layer utilities) can override it */
+/* Layered so Tailwind utilities (in @layer utilities) can override it.
+  Layout, type, colour and cursors are utilities in button.tsx; this file
+  holds the plate geometry, the state variables and the motion. */
 @layer components {
   /* Base button — the 17/5 octagon, 12/4 at Small (see .sm) */
   .button {
@@ -15,13 +17,6 @@
     --cut-br: var(--btn-cut-big);
     --cut-tr: var(--btn-cut-small);
     --cut-bl: var(--btn-cut-small);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 0;
-    cursor: pointer;
-    white-space: nowrap;
-    line-height: 1;
     transition: --btn-sweep .55s cubic-bezier(.2,.8,.2,1), --btn-key .2s, color .2s;
   }
 
@@ -41,7 +36,6 @@
     --btn-edge: var(--color-accent);
     --btn-sweep-color: var(--color-foreground);
     --btn-fill: var(--color-accent);
-    color: var(--color-text-on-accent);
   }
   .primary:active { --btn-fill: var(--color-accent-pressed); }
 
@@ -49,47 +43,19 @@
     --btn-edge: var(--color-foreground);
     --btn-sweep-color: var(--color-accent);
     --btn-fill: var(--color-background);
-    color: var(--color-foreground);
   }
   .secondary:active { --btn-fill: var(--color-card-secondary); }
 
-  /* Sizes come from the type and space tokens. Medium is floored at the
-    44px WCAG 2.5.5 touch target; Small is a dense desktop size. */
   .focus.sm { --btn-cut-big: 12px; --btn-cut-small: 4px; }
-  .button.sm { padding: var(--spacing-2xs) var(--spacing-s); font-size: var(--text-step--1); }
-  .button.md { padding: var(--spacing-xs) var(--spacing-m);  font-size: var(--text-step--1); min-height: 2.75rem; }
-  .button.lg { padding: var(--spacing-s) var(--spacing-m);   font-size: var(--text-step-0); }
 
-  /* Loading indicator preserves the label width and its accessible name */
-  .label { display: inline-block; }
-  .button[aria-busy="true"] .label { opacity: 0; }
-
-  .cells {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    pointer-events: none;
-  }
-
-  .cells > span {
-    width: 6px;
-    height: 6px;
-    background: currentColor;
-    animation: cell 1s infinite;
-  }
-
-  .cells > span:nth-child(2) { animation-delay: .16s; }
-  .cells > span:nth-child(3) { animation-delay: .32s; }
-
+  .cell { animation: cell 1s infinite; }
+  .cell:nth-child(2) { animation-delay: .16s; }
+  .cell:nth-child(3) { animation-delay: .32s; }
   @keyframes cell { 0%, 100% { opacity: .25; } 40% { opacity: 1; } }
 
   .button[aria-busy="true"] {
     --plate-keyline: conic-gradient(from var(--btn-ang, 0deg), var(--btn-sweep-color) 0 80deg, var(--btn-edge) 80deg 360deg);
     --btn-key: 2px;
-    cursor: progress;
     animation: radar 1.2s linear infinite;
   }
   @keyframes radar { to { --btn-ang: 362deg; } }
@@ -99,8 +65,6 @@
     --plate-fill: repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background);
     --btn-sweep: 0deg;
     --btn-key: 1px;
-    color: var(--color-muted);
-    cursor: not-allowed;
   }
 
   /* Clipped keyboard focus ring — a 2px plate tracing the button 4px out,
@@ -116,14 +80,7 @@
     --plate-keyline: transparent;
     --plate-keyline-width: 2px;
     --plate-fill: transparent;
-    display: inline-flex;
-    padding: 4px;
-    margin: -4px;
-    transition: transform .12s;
   }
-
-  /* Fill the wrapper so the ring hugs the button when a parent stretches it */
-  .focus > .button { flex: 1; }
 
   .focus:has(> .button:active:not(:disabled, [aria-busy="true"])) {
     transform: translateY(1px);
@@ -143,16 +100,16 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .button, .button:focus-visible, .focus { transition: none; }
+    .button, .button:focus-visible { transition: none; }
     .button[aria-busy="true"] { animation: none; }
-    .cells > span { animation: none; opacity: .7; }
+    .cell { animation: none; opacity: .7; }
   }
 
   @media (forced-colors: active) {
     .button { border: 1px solid ButtonText; }
     .button:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
-    .button:disabled { border-color: GrayText; color: GrayText; }
+    .button:disabled { border-color: GrayText; }
     .focus { border: 0; }
-    .cells > span { box-sizing: border-box; border: 3px solid ButtonText; background: none; }
+    .cell { border: 3px solid ButtonText; }
   }
 }

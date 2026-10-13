@@ -11,6 +11,18 @@ export type ButtonProps = {
   loading?: boolean;
 } & Omit<ComponentPropsWithRef<"button">, "style">;
 
+/* Medium is floored at the 44px WCAG 2.5.5 touch target; Small is a dense desktop size. */
+const sizes = {
+  sm: "px-s py-2xs text-step--1",
+  md: "px-m py-xs text-step--1 min-h-[2.75rem]",
+  lg: "px-m py-s text-step-0",
+};
+
+const variants = {
+  primary: "text-text-on-accent",
+  secondary: "text-foreground",
+};
+
 /**
  * An animated action button built on `Plate`.
  *
@@ -54,25 +66,43 @@ export function Button({
 
   return (
     // Render the focus ring outside the clipped button plate.
-    <Plate as="span" className={cn(styles.focus, size === "sm" && styles.sm)}>
+    <Plate
+      as="span"
+      className={cn(
+        "inline-flex p-1 -m-1 transition-transform duration-[120ms] motion-reduce:transition-none",
+        styles.focus,
+        size === "sm" && styles.sm,
+      )}
+    >
       <Plate
         as="button"
         {...rest}
         type={type}
-        className={cn(styles.button, styles[variant], styles[size], className)}
+        className={cn(
+          "group inline-flex flex-1 items-center justify-center whitespace-nowrap leading-none",
+          "cursor-pointer aria-busy:cursor-progress disabled:cursor-not-allowed disabled:text-muted",
+          styles.button,
+          styles[variant],
+          variants[variant],
+          sizes[size],
+          className,
+        )}
         onClick={handleClick}
         disabled={disabled}
         aria-disabled={busy || undefined}
         aria-busy={busy || undefined}
       >
-        <span className={styles.label}>{children}</span>
+        <span className="inline-block group-aria-busy:opacity-0">{children}</span>
         {busy && (
           <>
             <span className="sr-only">, loading</span>
-            <span className={styles.cells} aria-hidden="true">
-              <span />
-              <span />
-              <span />
+            <span
+              className="pointer-events-none absolute inset-0 flex items-center justify-center gap-[5px]"
+              aria-hidden="true"
+            >
+              <span className={cn("size-[6px] bg-current", styles.cell)} />
+              <span className={cn("size-[6px] bg-current", styles.cell)} />
+              <span className={cn("size-[6px] bg-current", styles.cell)} />
             </span>
           </>
         )}
