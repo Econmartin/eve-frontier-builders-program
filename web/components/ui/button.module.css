@@ -1,7 +1,11 @@
-/* Base button */
+/* Base button — the 17/5 octagon, 12/4 at Small (see .sm) */
 .button {
   --key: 1px;
-  --surface-key: var(--key);
+  --plate-keyline-width: var(--key);
+  --cut-tl: var(--oct-big);
+  --cut-br: var(--oct-big);
+  --cut-tr: var(--oct-small);
+  --cut-bl: var(--oct-small);
   --sweep: 0deg;
   --ang: 0deg;
   display: inline-flex;
@@ -11,12 +15,15 @@
   cursor: pointer;
   white-space: nowrap;
   font-family: var(--font-body);
-  transition: --sweep .55s cubic-bezier(.2,.8,.2,1), --key .2s, color .2s, transform .12s;
+  transition: --sweep .55s cubic-bezier(.2,.8,.2,1), --key .2s, color .2s;
 }
 
 /* Pointer and keyboard interaction */
 .button:is(:hover, :focus-visible) { --sweep: 362deg; --key: 2px; }
-.button:active { --sweep: 362deg; --key: 3px; transform: translateY(1px); }
+.button:active { --sweep: 362deg; --key: 3px; }
+
+/* Keyboard focus lands where the eye isn't yet, so its sweep starts gently */
+.button:focus-visible { transition: --sweep .7s cubic-bezier(.45,0,.2,1), --key .2s, color .2s; }
 .button:active::before { transition: none; }
 
 /* Visual variants */
@@ -27,7 +34,8 @@
 .secondary:active { --fill: var(--color-card-secondary); }
 
 /* Sizes */
-.sm { padding: 8px 16px;  min-height: 34px; font-size: 14px; }
+.focus.sm { --oct-big: 12px; --oct-small: 4px; }
+.button.sm { padding: 8px 16px;  min-height: 34px; font-size: 14px; }
 .md { padding: 12px 24px; min-height: 46px; font-size: 15px; }
 .lg { padding: 17px 24px; min-height: 56px; font-size: 16.5px; }
 
@@ -63,7 +71,6 @@
   --key: 1px;
   color: var(--color-muted);
   cursor: not-allowed;
-  transform: none;
 }
 
 .button[aria-busy="true"] { --key: 2px; cursor: progress; animation: radar 1.2s linear infinite; }
@@ -71,31 +78,41 @@
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .button { transition: none; }
+  .button, .button:focus-visible { transition: none; }
   .button[aria-busy="true"] { animation: none; }
   .cells i { animation: none; opacity: .7; }
 }
 
-/* Clipped keyboard focus ring */
+/* Clipped keyboard focus ring — a 2px plate tracing the button 4px out,
+  with a 2px gap. Each cut grows by 4px × (2 − √2) so the edges stay
+  parallel, and the negative margin keeps the ring out of the layout. */
 .focus {
-  position: relative;
-  isolation: isolate;
+  --oct-big: 17px;
+  --oct-small: 5px;
+  --cut-tl: calc(var(--oct-big) + 2.343px);
+  --cut-br: calc(var(--oct-big) + 2.343px);
+  --cut-tr: calc(var(--oct-small) + 2.343px);
+  --cut-bl: calc(var(--oct-small) + 2.343px);
+  --plate-keyline: transparent;
+  --plate-keyline-width: 2px;
+  --plate-fill: transparent;
   display: inline-flex;
   padding: 4px;
+  margin: -4px;
+}
+
+/* Fill the wrapper so the ring hugs the button when a parent stretches it */
+.focus > .button { flex: 1; }
+
+/* Pressing drops the button and its ring together */
+.focus { transition: transform .12s; }
+.focus:has(> .button:active:not(:disabled, [aria-disabled="true"]:not([aria-busy="true"]))) {
+  transform: translateY(1px);
 }
 
 .focus:has(> .button:focus-visible) {
-  background: var(--color-foreground);
-  clip-path: var(--focus-clip);
-}
-
-.focus:has(> .button:focus-visible)::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  z-index: -1;
-  clip-path: inherit;
-  background: var(--color-background);
+  --plate-keyline: var(--color-foreground);
+  --plate-fill: var(--color-background);
 }
 
 .button:focus-visible { outline: none; }
@@ -110,7 +127,6 @@
   .button { border: 1px solid ButtonText; }
   .button:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
    .button:is(:disabled, [aria-disabled="true"]:not([aria-busy="true"])) { border-color: GrayText; color: GrayText; }
-  .focus:has(> .button:focus-visible) { background: none; clip-path: none; }
-  .focus:has(> .button:focus-visible)::before { display: none; }
+  .focus { border: 0; }
   .cells i { box-sizing: border-box; border: 3px solid ButtonText; background: none; }
 }

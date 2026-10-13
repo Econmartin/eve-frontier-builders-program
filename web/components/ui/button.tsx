@@ -1,5 +1,7 @@
-import type { ComponentPropsWithRef, CSSProperties, MouseEvent } from "react";
-import { Surface } from "./surface";
+"use client";
+
+import type { ComponentPropsWithRef, MouseEvent } from "react";
+import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./button.module.css";
 
@@ -10,7 +12,7 @@ type ButtonProps = {
 } & Omit<ComponentPropsWithRef<"button">, "style">;
 
 /**
- * An animated action button built on `Surface`.
+ * An animated action button built on `Plate`.
  *
  * @example
  * ```tsx
@@ -36,7 +38,6 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const inert = disabled || loading;
-  const shape = size === "sm" ? "diagonal-small" : "diagonal";
 
   // Keep loading buttons focusable while preventing activation.
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -48,16 +49,12 @@ export function Button({
   };
 
   return (
-    // Render the focus ring outside the clipped button surface.
-    <span
-      className={styles.focus}
-      style={{ "--focus-clip": `var(--clip-${shape})` } as CSSProperties}
-    >
-      <Surface
+    // Render the focus ring outside the clipped button plate.
+    <Plate as="span" className={cn(styles.focus, size === "sm" && styles.sm)}>
+      <Plate
         as="button"
         {...rest}
         type={type}
-        shape={size === "sm" ? "diagonal-small" : "diagonal"}
         keyline={
           loading
             ? "conic-gradient(from var(--ang), var(--sweepcol) 0 80deg, var(--edge) 80deg 360deg)"
@@ -83,7 +80,7 @@ export function Button({
             <i /><i /><i />
           </span>
         )}
-      </Surface>
-    </span>
+      </Plate>
+    </Plate>
   );
 }
