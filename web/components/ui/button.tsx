@@ -85,7 +85,7 @@ export function Button({
         {...rest}
         type={type}
         className={cn(
-          "group inline-flex flex-1 items-center justify-center whitespace-nowrap",
+          "group inline-flex flex-1 items-center justify-center font-heading font-bold whitespace-nowrap",
           "cursor-pointer aria-busy:cursor-progress disabled:cursor-not-allowed disabled:text-muted",
           styles.button,
           styles[variant],
