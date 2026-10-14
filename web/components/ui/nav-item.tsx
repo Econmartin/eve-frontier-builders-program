@@ -30,25 +30,25 @@ export function NavItem({ current = false, className, children, ...rest }: NavIt
         as="a"
         {...rest}
         className={cn(
-          "inline-flex min-h-[2.75rem] items-center gap-2xs py-2xs pr-m pl-(--nav-inset) whitespace-nowrap no-underline",
+          "inline-flex min-h-[2.75rem] items-center gap-2xs py-2xs pr-m pl-(--nav-inset) whitespace-nowrap",
           "font-heading text-step-0 leading-none font-bold tracking-[0.02em] text-foreground",
           styles.item,
           className,
         )}
         aria-current={current ? "page" : undefined}
       >
-        <span className={cn("relative h-3 w-1 flex-none", styles.lamp)} aria-hidden="true" />
+        <span className={cn("h-3 w-1 flex-none", styles.lamp)} aria-hidden="true" />
         {children}
       </Plate>
     </li>
   );
 }
 
-/** A navigation row that controls the interlock spacing and stacking. */
+/** A navigation row that controls the interlock spacing. */
 export function NavList({ children, className, ...rest }: NavListProps) {
   return (
-    <nav {...rest} className={cn("flex-none", className)}>
-      <ul className={cn("m-0 flex list-none items-center p-0", styles.list)}>{children}</ul>
+    <nav {...rest} className={className}>
+      <ul role="list" className={cn("flex items-center", styles.list)}>{children}</ul>
     </nav>
   );
 }

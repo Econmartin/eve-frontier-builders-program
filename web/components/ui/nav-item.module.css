@@ -1,23 +1,8 @@
 /* Layered so Tailwind utilities (in @layer utilities) can override it.
   Layout, type and colour are utilities in nav-item.tsx; this file holds
-  the interlock geometry, the stacking and the lamp. */
+  the interlock geometry and the lamp. */
 @layer components {
-  /* --nav-overlap matches the 17px cut, so each notch tucks under the
-    previous item's corner and leaves --nav-gap of space along the seam. */
-  .list {
-    --nav-overlap: 17px;
-    --nav-gap: 7px;
-  }
-
-  /* Earlier items stack above later ones so each corner covers the next notch */
-  .slot { position: relative; }
-  .slot:nth-child(1) { z-index: 6; }
-  .slot:nth-child(2) { z-index: 5; }
-  .slot:nth-child(3) { z-index: 4; }
-  .slot:nth-child(4) { z-index: 3; }
-  .slot:nth-child(5) { z-index: 2; }
-  .slot:nth-child(6) { z-index: 1; }
-  .slot:focus-within { z-index: 10; }
+  .list { --nav-gap: 7px; }
 
   /* First item: the 17/5 octagon, cut by Plate */
   .item {
@@ -35,7 +20,8 @@
     corners, so the polygon is supplied whole. --_n is the inset of the
     fill layer, the keyline width, and each diagonal vertex moves by
     n·(√2 − 1) along its edge so the keyline stays even. */
-  .slot + .slot { margin-left: calc(var(--nav-gap) - var(--nav-overlap)); }
+  /* 17px is the cut: the notch sits under the previous corner, --nav-gap along the seam */
+  .slot + .slot { margin-left: calc(var(--nav-gap) - 17px); }
   .slot + .slot .item {
     --_n: var(--plate-keyline-width, 1px);
     --plate-clip: polygon(
