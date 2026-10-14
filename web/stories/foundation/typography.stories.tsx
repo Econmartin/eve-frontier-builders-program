@@ -1,31 +1,27 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Section } from "../section";
+import { theme, tokens, type Token } from "./theme";
 import { useComputedStyles } from "./tokens";
 
-const steps = [
-  { token: "step-5", className: "text-step-5" },
-  { token: "step-4", className: "text-step-4" },
-  { token: "step-3", className: "text-step-3" },
-  { token: "step-2", className: "text-step-2" },
-  { token: "step-1", className: "text-step-1" },
-  { token: "step-0", className: "text-step-0" },
-  { token: "step--1", className: "text-step--1" },
-  { token: "step--2", className: "text-step--2" },
-  { token: "step--3", className: "text-step--3" },
-];
-
+const steps = tokens(theme, "--text-step-")
+  .flatMap((group) => group.tokens)
+  .filter(({ name }) => !name.endsWith("--line-height"))
+  .reverse();
+const families = tokens(theme, "--font-").flatMap((group) => group.tokens);
 const headings = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
 
-function Step({ token, className }: { token: string; className: string }) {
+function Step({ name, value }: Token) {
   const [ref, [size, line]] = useComputedStyles<HTMLParagraphElement>("font-size", "line-height");
   return (
     <div className="grid grid-cols-[8rem_1fr] items-baseline gap-s border-b border-line pb-xs">
       <code className="text-step--2 text-muted">
-        {token}
+        {name.slice("--text-".length)}
         <br />
         {size} / {line}
+        <br />
+        {value}
       </code>
-      <p ref={ref} className={className}>
+      <p ref={ref} style={{ fontSize: `var(${name})`, lineHeight: `var(${name}--line-height)` }}>
         Build on the Frontier
       </p>
     </div>
@@ -60,7 +56,7 @@ export const Scale: Story = {
   render: () => (
     <div className="grid gap-s">
       {steps.map((step) => (
-        <Step key={step.token} {...step} />
+        <Step key={step.name} {...step} />
       ))}
     </div>
   ),
@@ -80,14 +76,13 @@ export const Headings: Story = {
 export const Families: Story = {
   render: () => (
     <div className="grid gap-l">
-      <Section title="Heading">
-        <p className="font-heading text-step-2 font-bold">The quick brown fox jumps over the lazy dog</p>
-      </Section>
-      <Section title="Body">
-        <p className="font-body text-step-0">
-          The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.
-        </p>
-      </Section>
+      {families.map(({ name, value }) => (
+        <Section key={name} title={`${name.slice("--font-".length)} · ${value}`}>
+          <p className="text-step-1" style={{ fontFamily: `var(${name})` }}>
+            The quick brown fox jumps over the lazy dog
+          </p>
+        </Section>
+      ))}
     </div>
   ),
 };
