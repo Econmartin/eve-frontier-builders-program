@@ -1,13 +1,13 @@
 import type { Decorator, Preview } from "@storybook/nextjs-vite";
 import { useEffect, type ReactNode } from "react";
-import { geistMono, geistSans } from "../app/fonts";
+import { disketMono, geistMono, inter } from "../app/fonts";
 import "./preview.css";
 
 /* The app sets the font variables and the theme on <html>, so stories do the same */
 function Document({ theme, children }: { theme: string; children: ReactNode }) {
   useEffect(() => {
     const html = document.documentElement;
-    html.classList.add(geistSans.variable, geistMono.variable, "antialiased");
+    html.classList.add(disketMono.variable, inter.variable, geistMono.variable, "antialiased");
     if (theme === "light" || theme === "dark") html.dataset.theme = theme;
     else delete html.dataset.theme;
   }, [theme]);
