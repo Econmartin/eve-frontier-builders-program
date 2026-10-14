@@ -7,4 +7,4 @@ export {
   type ButtonVariant,
   type ButtonSize,
 } from "./button";
-export { NavItem, NavList } from "./nav-item";
+export { NavItem, NavList, type NavItemProps, type NavListProps } from "./nav-item";

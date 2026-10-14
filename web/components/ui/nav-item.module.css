@@ -1,103 +1,112 @@
-/* Navigation row */
-.list {
-  --nav-overlap: 17px;
-  --nav-gap: 7px;
-  --clip-interlock: polygon(12px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%, 17px calc(100% - 17px), 17px 5px);
-  --clip-interlock-inner: polygon(14.41px 1px, calc(100% - 5.41px) 1px, calc(100% - 1px) 5.41px, calc(100% - 1px) calc(100% - 17.41px), calc(100% - 17.41px) calc(100% - 1px), 2.41px calc(100% - 1px), 18px calc(100% - 16.59px), 18px 4.59px);
-  --clip-interlock-inner-2: polygon(16.83px 2px, calc(100% - 5.83px) 2px, calc(100% - 2px) 5.83px, calc(100% - 2px) calc(100% - 17.83px), calc(100% - 17.83px) calc(100% - 2px), 4.83px calc(100% - 2px), 19px calc(100% - 16.17px), 19px 4.17px);
-  display: flex;
-  align-items: center;
-  flex: none;
-  gap: 0;
-}
+/* Layered so Tailwind utilities (in @layer utilities) can override it.
+  Layout, type and colour are utilities in nav-item.tsx; this file holds
+  the interlock geometry, the stacking and the lamp. */
+@layer components {
+  /* --nav-overlap matches the 17px cut, so each notch tucks under the
+    previous item's corner and leaves --nav-gap of space along the seam. */
+  .list {
+    --nav-overlap: 17px;
+    --nav-gap: 7px;
+  }
 
-/* Interlock stacking order */
-.list > *:nth-child(1) { z-index: 6; }
-.list > *:nth-child(2) { z-index: 5; }
-.list > *:nth-child(3) { z-index: 4; }
-.list > *:nth-child(4) { z-index: 3; }
-.list > *:nth-child(5) { z-index: 2; }
-.list > *:nth-child(6) { z-index: 1; }
+  /* Earlier items stack above later ones so each corner covers the next notch */
+  .slot { position: relative; }
+  .slot:nth-child(1) { z-index: 6; }
+  .slot:nth-child(2) { z-index: 5; }
+  .slot:nth-child(3) { z-index: 4; }
+  .slot:nth-child(4) { z-index: 3; }
+  .slot:nth-child(5) { z-index: 2; }
+  .slot:nth-child(6) { z-index: 1; }
+  .slot:focus-within { z-index: 10; }
 
-/* Base navigation item */
-.item {
-  --surface-key: 0;
-  --surface-clip-inner: var(--clip-diagonal-inner);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 22px;
-  font-family: var(--font-heading);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  color: var(--color-foreground);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background .2s;
-}
+  /* First item: the 17/5 octagon, cut by Plate */
+  .item {
+    --cut-tl: 17px;
+    --cut-br: 17px;
+    --cut-tr: 5px;
+    --cut-bl: 5px;
+    --plate-fill: var(--color-background);
+    --nav-inset: var(--spacing-m);
+  }
+  .item[aria-current] { --plate-fill: var(--color-card); }
 
-/* Interlocking items */
-.linked {
-  --surface-clip-inner: var(--clip-interlock-inner);
-  padding-left: 34px;
-  margin-left: calc(var(--nav-gap) - var(--nav-overlap));
-}
+  /* Following items: the left edge notches inward to meet the previous
+    item's bottom-right cut. Plate's cut variables only describe convex
+    corners, so the polygon is supplied whole. --_n is the inset of the
+    fill layer, the keyline width, and each diagonal vertex moves by
+    n·(√2 − 1) along its edge so the keyline stays even. */
+  .slot + .slot { margin-left: calc(var(--nav-gap) - var(--nav-overlap)); }
+  .slot + .slot .item {
+    --_n: var(--plate-keyline-width, 1px);
+    --plate-clip: polygon(
+      12px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px),
+      calc(100% - 17px) 100%, 0 100%, 17px calc(100% - 17px), 17px 5px
+    );
+    --plate-clip-inner: polygon(
+      calc(12px + var(--_n) * 2.41421) var(--_n),
+      calc(100% - 5px - var(--_n) * 0.41421) var(--_n),
+      calc(100% - var(--_n)) calc(5px + var(--_n) * 0.41421),
+      calc(100% - var(--_n)) calc(100% - 17px - var(--_n) * 0.41421),
+      calc(100% - 17px - var(--_n) * 0.41421) calc(100% - var(--_n)),
+      calc(var(--_n) * 2.41421) calc(100% - var(--_n)),
+      calc(17px + var(--_n)) calc(100% - 17px + var(--_n) * 0.41421),
+      calc(17px + var(--_n)) calc(5px - var(--_n) * 0.41421)
+    );
+    /* the top wedge starts 12px in, so the start padding grows by that */
+    --nav-inset: calc(var(--spacing-m) + 12px);
+  }
 
-/* Keyboard focus keyline */
-.item:focus-visible {
-  --surface-clip-inner: var(--clip-diagonal-inner-2);
-  --surface-keyline: var(--color-foreground);
-  z-index: 10;
-  outline: none;
-}
+  /* Keyboard focus thickens the keyline in the foreground colour */
+  .item:focus-visible {
+    --plate-keyline: var(--color-foreground);
+    --plate-keyline-width: 2px;
+    outline: none;
+  }
 
-/* Interlock focus inset */
-.linked:focus-visible { --surface-clip-inner: var(--clip-interlock-inner-2); }
+  /* Lamp: dim at rest, lit on hover, focus and the current page */
+  .lamp {
+    background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
+    transition: background .14s ease, box-shadow .14s ease;
+  }
 
-/* Active-state lamp */
-.lamp {
-  position: relative;
-  flex: none;
-  width: 4px;
-  height: 0.62em;
-  background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
-  transition: background .14s ease, box-shadow .14s ease;
-}
+  .item:focus-visible .lamp,
+  .item[aria-current] .lamp {
+    background: var(--color-accent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
+      0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  }
 
-.item:is(:hover, :focus-visible) .lamp,
-.item[aria-current] .lamp {
-  background: var(--color-accent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
-    0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
-}
+  /* Hover is gated so it can't stick after a tap */
+  @media (hover: hover) {
+    .item:hover .lamp {
+      background: var(--color-accent);
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
+        0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+    }
+  }
 
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .item,
-  .lamp { transition: none; }
-}
+  @media (prefers-reduced-motion: reduce) {
+    .lamp { transition: none; }
+  }
 
-/* Windows high-contrast mode */
-@media (forced-colors: active) {
-  /* forced colours are applied after transitions compute, so every
-     intermediate frame snaps to Canvas — i.e. a black flash */
-  .item,
-  .lamp { transition: none; }
+  @media (forced-colors: active) {
+    /* Forced colours apply after transitions compute, so every frame
+      would snap to Canvas and flash */
+    .lamp { transition: none; }
 
-  /* the interlock exists only as clip-path, which forced-colors drops — the
-     negative margin then reads as doubled borders, so space them instead */
-  .list { gap: 6px; }
-  .linked { margin-left: 0; padding-left: 22px; }
+    /* Forced colours drop the clip-path, so the overlap would read as
+      doubled borders; space the items instead */
+    .list { gap: 6px; }
+    .slot + .slot { margin-left: 0; }
+    .slot + .slot .item { --nav-inset: var(--spacing-m); }
 
-  /* the hover/focus lamp rule outranks a bare .lamp here, and its background
-     would be forced to a background colour, i.e. invisible */
-  .lamp { background: ButtonText; box-shadow: none; }
-  .item:is(:hover, :focus-visible) .lamp,
-  .item[aria-current] .lamp { background: Highlight; box-shadow: none; }
+    .lamp { background: ButtonText; box-shadow: none; }
+    .item:is(:hover, :focus-visible) .lamp,
+    .item[aria-current] .lamp { background: Highlight; box-shadow: none; }
 
-  .item:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+    .item:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+  }
 }
