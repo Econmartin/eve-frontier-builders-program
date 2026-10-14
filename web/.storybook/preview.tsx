@@ -1,10 +1,7 @@
 import type { Decorator, Preview } from "@storybook/nextjs-vite";
-import { Geist, Geist_Mono } from "next/font/google";
 import { useEffect, type ReactNode } from "react";
+import { geistMono, geistSans } from "../app/fonts";
 import "./preview.css";
-
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 /* The app sets the font variables and the theme on <html>, so stories do the same */
 function Document({ theme, children }: { theme: string; children: ReactNode }) {
