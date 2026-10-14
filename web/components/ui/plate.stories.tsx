@@ -1,9 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Section } from "@/stories/section";
-import { Plate, type PlateCorners, type PlateCut } from "./plate";
-
-const corners: PlateCorners[] = ["tl", "tr", "br", "bl", "tl-br", "tr-bl"];
-const cuts: PlateCut[] = ["sm", "md"];
+import { Plate, plateCorners, plateCuts } from "./plate";
 
 const meta = {
   title: "Components/Plate",
@@ -15,8 +12,8 @@ const meta = {
     className: "p-m",
   },
   argTypes: {
-    corners: { control: "select", options: corners },
-    cut: { control: "radio", options: cuts },
+    corners: { control: "select", options: plateCorners },
+    cut: { control: "radio", options: plateCuts },
     keyline: { control: "color" },
     fill: { control: "color" },
     as: { table: { disable: true } },
@@ -32,10 +29,10 @@ type Story = StoryObj<typeof meta>;
 export const All: Story = {
   render: (args) => (
     <div className="grid gap-l">
-      {cuts.map((cut) => (
+      {plateCuts.map((cut) => (
         <Section key={cut} title={`cut="${cut}"`}>
           <div className="flex flex-wrap gap-s">
-            {corners.map((option) => (
+            {plateCorners.map((option) => (
               <Plate key={option} {...args} corners={option} cut={cut} className="min-w-40 p-m">
                 <code className="text-step--2">{option}</code>
               </Plate>

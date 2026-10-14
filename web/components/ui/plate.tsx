@@ -8,8 +8,11 @@ import type {
 import { cn } from "@/lib/cn";
 import styles from "./plate.module.css";
 
-export type PlateCorners = "tl" | "tr" | "br" | "bl" | "tl-br" | "tr-bl";
-export type PlateCut = "sm" | "md";
+export const plateCorners = ["tl", "tr", "br", "bl", "tl-br", "tr-bl"] as const;
+export const plateCuts = ["sm", "md"] as const;
+
+export type PlateCorners = (typeof plateCorners)[number];
+export type PlateCut = (typeof plateCuts)[number];
 
 interface PlateOwnProps<T extends ElementType> {
   as?: T;

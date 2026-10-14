@@ -1,10 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { Section } from "@/stories/section";
-import { Button, type ButtonProps } from "./button";
+import { Button, buttonSizes, buttonVariants, type ButtonProps } from "./button";
 
-const variants: NonNullable<ButtonProps["variant"]>[] = ["primary", "secondary"];
-const sizes: NonNullable<ButtonProps["size"]>[] = ["sm", "md", "lg"];
 const states: { label: string; props: Partial<ButtonProps> }[] = [
   { label: "Default", props: {} },
   { label: "Loading", props: { loading: true } },
@@ -23,8 +21,8 @@ const meta = {
     onClick: fn(),
   },
   argTypes: {
-    variant: { control: "radio", options: variants },
-    size: { control: "radio", options: sizes },
+    variant: { control: "radio", options: buttonVariants },
+    size: { control: "radio", options: buttonSizes },
     loading: { control: "boolean" },
     disabled: { control: "boolean" },
     type: { table: { disable: true } },
@@ -39,11 +37,11 @@ type Story = StoryObj<typeof meta>;
 export const All: Story = {
   render: (args) => (
     <div className="grid gap-xl">
-      {variants.map((variant) => (
+      {buttonVariants.map((variant) => (
         <div key={variant} className="grid gap-l">
           <Section title={`${variant}: sizes`}>
             <div className="flex flex-wrap items-center gap-s">
-              {sizes.map((size) => (
+              {buttonSizes.map((size) => (
                 <Button key={size} {...args} variant={variant} size={size}>
                   Button {size}
                 </Button>
