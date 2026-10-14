@@ -58,6 +58,18 @@
   --text-step-4:   clamp(2.312rem, 2.175rem + 0.6875vw, 3rem);
   --text-step-5:   clamp(2.812rem, 2.625rem + 0.9375vw, 3.75rem);
 
+  /* leading: 1.5 on the body steps (WCAG 1.4.12), tightening on the
+    heading-only steps */
+  --text-step--3--line-height: 1.5;
+  --text-step--2--line-height: 1.5;
+  --text-step--1--line-height: 1.5;
+  --text-step-0--line-height:  1.5;
+  --text-step-1--line-height:  1.5;
+  --text-step-2--line-height:  1.16;
+  --text-step-3--line-height:  1.08;
+  --text-step-4--line-height:  1.04;
+  --text-step-5--line-height:  1;
+
   /* space */
   --spacing-3xs:   0.25rem;
   --spacing-2xs:   clamp(0.5625rem, 0.55rem + 0.0625vw, 0.625rem);
@@ -181,10 +193,17 @@
     color: var(--color-foreground);
     font-family: var(--font-body);
     font-size: var(--text-step-0);
-    line-height: 1.55;
+    line-height: var(--text-step-0--line-height);
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 700;
   }
+  /* Heading sizes and leading per level */
+  h1 { font-size: var(--text-step-4);  line-height: 1.04; }
+  h2 { font-size: var(--text-step-3);  line-height: 1.08; }
+  h3 { font-size: var(--text-step-2);  line-height: 1.16; }
+  h4 { font-size: var(--text-step-1);  line-height: 1.2; }
+  h5 { font-size: var(--text-step-0);  line-height: 1.25; }
+  h6 { font-size: var(--text-step--1); line-height: 1.3; }
 }
