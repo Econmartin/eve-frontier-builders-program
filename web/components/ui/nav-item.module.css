@@ -11,7 +11,7 @@
     --cut-tr: 5px;
     --cut-bl: 5px;
     --plate-fill: var(--color-background);
-    --nav-inset: var(--spacing-m);
+    --nav-inset: 24px;
   }
   .item[aria-current] { --plate-fill: var(--color-card); }
 
@@ -38,8 +38,8 @@
       calc(17px + var(--_n)) calc(100% - 17px + var(--_n) * 0.41421),
       calc(17px + var(--_n)) calc(5px - var(--_n) * 0.41421)
     );
-    /* the top wedge starts 12px in, so the start padding grows by that */
-    --nav-inset: calc(var(--spacing-m) + 12px);
+    /* 24px plus the 12px top wedge */
+    --nav-inset: 36px;
   }
 
   /* Keyboard focus thickens the keyline in the foreground colour */
@@ -87,7 +87,7 @@
       doubled borders; space the items instead */
     .list { gap: 6px; }
     .slot + .slot { margin-left: 0; }
-    .slot + .slot .item { --nav-inset: var(--spacing-m); }
+    .slot + .slot .item { --nav-inset: 24px; }
 
     .lamp { background: ButtonText; box-shadow: none; }
     .item:is(:hover, :focus-visible) .lamp,

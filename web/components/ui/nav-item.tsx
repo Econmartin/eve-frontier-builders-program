@@ -30,7 +30,7 @@ export function NavItem({ current = false, className, children, ...rest }: NavIt
         as="a"
         {...rest}
         className={cn(
-          "inline-flex min-h-[2.75rem] items-center gap-2xs py-2xs pr-m pl-(--nav-inset) whitespace-nowrap",
+          "inline-flex min-h-[2.75rem] items-center gap-2.5 py-3 pr-6 pl-(--nav-inset) whitespace-nowrap",
           "font-heading text-step-0 leading-none font-bold tracking-[0.02em] text-foreground",
           styles.item,
           className,
