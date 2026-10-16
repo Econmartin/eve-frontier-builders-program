@@ -2,3 +2,6 @@ ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
   - esbuild
+
+# Pin exact versions when adding dependencies
+savePrefix: ""
