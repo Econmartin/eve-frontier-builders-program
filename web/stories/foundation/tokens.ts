@@ -23,16 +23,18 @@ export function useToken(name: string) {
 export function useComputedStyles<T extends HTMLElement>(...properties: string[]) {
   const ref = useRef<T>(null);
   const [values, setValues] = useState<string[]>([]);
+  // Rest args are a fresh array each render, so the effect keys on their contents
+  const key = properties.join("\n");
   useEffect(() => {
+    const names = key.split("\n");
     const read = () => {
       if (!ref.current) return;
       const style = getComputedStyle(ref.current);
-      setValues(properties.map((property) => style.getPropertyValue(property)));
+      setValues(names.map((name) => style.getPropertyValue(name)));
     };
     read();
     addEventListener("resize", read);
     return () => removeEventListener("resize", read);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- rest args are a fresh array each render
-  }, properties);
+  }, [key]);
   return [ref, values] as const;
 }
