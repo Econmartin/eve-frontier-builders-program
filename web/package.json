@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "oxlint",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -26,13 +26,12 @@
     "@types/node": "24.19.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
-    "eslint": "9.39.5",
-    "eslint-config-next": "16.3.8",
     "eslint-plugin-storybook": "10.6.2",
+    "oxlint": "1.86.0",
     "storybook": "10.6.2",
     "tailwindcss": "4.3.3",
-    "typescript": "5.9.3",
-    "vite": "7.3.7"
+    "typescript": "7.0.2",
+    "vite": "8.3.2"
   },
   "packageManager": "pnpm@10.33.2"
 }
