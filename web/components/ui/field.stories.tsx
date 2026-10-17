@@ -1,14 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { Section } from "@/stories/section";
-import { Field, type FieldProps } from "./field";
+import { Field, fieldTypes, type FieldProps } from "./field";
 import { NavItem, NavList } from "./nav-item";
 
 const states: { label: string; props: Partial<FieldProps> }[] = [
   { label: "Empty", props: {} },
   { label: "With a value", props: { defaultValue: "Smart Assembly" } },
   { label: "Shortcut", props: { shortcut: "/" } },
+  { label: "Letter shortcut", props: { shortcut: "k" } },
   { label: "Disabled", props: { disabled: true } },
+  { label: "Disabled with a value", props: { disabled: true, defaultValue: "Smart Assembly" } },
 ];
 
 const meta = {
@@ -25,8 +27,7 @@ const meta = {
     interlock: { control: "boolean" },
     disabled: { control: "boolean" },
     shortcut: { control: "text" },
-    type: { table: { disable: true } },
-    start: { table: { disable: true } },
+    type: { control: "radio", options: fieldTypes },
   },
   render: (args) => (
     <div className="max-w-sm">

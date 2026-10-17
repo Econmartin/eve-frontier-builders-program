@@ -27,7 +27,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Every icon at each crisp size. Icons take the current text colour. */
+/** Every icon at each crisp size, and the labelled form. Icons take the current text colour. */
 export const All: Story = {
   render: () => (
     <div className="grid gap-l">
@@ -51,6 +51,14 @@ export const All: Story = {
               ))}
             </div>
           ))}
+        </div>
+      </Section>
+      <Section title="decorative and labelled">
+        <div className="flex items-center gap-m">
+          <Icon name="cross" className="size-5 text-foreground" />
+          <code className="text-step--2 text-muted">aria-hidden</code>
+          <Icon name="cross" aria-label="Clear" className="size-5 text-foreground" />
+          <code className="text-step--2 text-muted">role=&quot;img&quot;</code>
         </div>
       </Section>
     </div>

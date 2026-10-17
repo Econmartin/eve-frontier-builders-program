@@ -14,13 +14,12 @@
     --field-inset: 16px;
   }
 
-  /* Interlocked: the notch tucks under the last item of a NavList, so the
-    field pulls back by the 17px cut less the row's gap. The polygon comes
-    from the nav module's .notched class. */
+  /* Interlocked after a NavList: pulls back by the 17px cut less the seam
+    gap. The polygon is the nav module's .notched class. */
   .linked {
     /* 16px plus the 12px top wedge */
     --field-inset: 28px;
-    margin-left: calc(var(--nav-gap, 7px) - 17px);
+    margin-left: calc(var(--nav-gap) - 17px);
   }
 
   .field:focus-within {
@@ -34,17 +33,13 @@
     --plate-fill: repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background);
   }
 
-  /* Drop the browser's own search decorations */
-  .input::-webkit-search-cancel-button,
-  .input::-webkit-search-decoration { appearance: none; }
-
-  .clear:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 0; }
+  .input::-webkit-search-cancel-button { appearance: none; }
 
   @media (forced-colors: active) {
     /* Forced colours drop the clip-path, so space the field instead */
     .linked { --field-inset: 16px; margin-left: 6px; }
     .field:focus-within { outline: 2px solid Highlight; outline-offset: 2px; }
-    .clear { color: ButtonText; }
-    .clear:focus-visible { outline-color: Highlight; }
+    /* The hatch fill is gone, so the border carries the state */
+    .field:has(.input:disabled) { border-color: GrayText; }
   }
 }

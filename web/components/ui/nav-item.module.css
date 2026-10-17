@@ -2,8 +2,6 @@
   Layout, type and colour are utilities in nav-item.tsx; this file holds
   the interlock geometry and the lamp. */
 @layer components {
-  .list { --nav-gap: 7px; }
-
   /* First item: the 17/5 octagon, cut by Plate */
   .item {
     --cut-tl: 17px;

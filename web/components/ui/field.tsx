@@ -5,8 +5,7 @@ import {
   useEffect,
   useRef,
   type ComponentPropsWithRef,
-  type MouseEvent,
-  type ReactNode,
+  type PointerEvent,
 } from "react";
 import { Icon } from "./icon";
 import { Plate } from "./plate";
@@ -14,12 +13,16 @@ import { cn } from "@/lib/cn";
 import styles from "./field.module.css";
 import navStyles from "./nav-item.module.css";
 
+export const fieldTypes = ["search", "text", "email", "url", "tel"] as const;
+
+export type FieldType = (typeof fieldTypes)[number];
+
 export type FieldProps = {
   placeholder: string;
+  type?: FieldType;
   interlock?: boolean;
   shortcut?: string;
-  start?: ReactNode;
-} & Omit<ComponentPropsWithRef<"input">, "style" | "placeholder">;
+} & Omit<ComponentPropsWithRef<"input">, "style" | "placeholder" | "type">;
 
 const EDITABLE = "input, textarea, select, [contenteditable]:not([contenteditable='false'])";
 
@@ -28,6 +31,7 @@ const EDITABLE = "input, textarea, select, [contenteditable]:not([contenteditabl
  *
  * `placeholder` is required: the clear button hides via `:placeholder-shown`.
  * `interlock` notches the left edge so the field can sit after a `NavList`.
+ * `className` styles the frame; every other prop goes to the input.
  *
  * @example
  * ```tsx
@@ -43,8 +47,8 @@ const EDITABLE = "input, textarea, select, [contenteditable]:not([contenteditabl
 export function Field({
   interlock = false,
   shortcut,
-  start,
   type = "search",
+  disabled,
   className,
   ref,
   ...rest
@@ -67,16 +71,18 @@ export function Field({
   );
 
   useEffect(() => {
-    if (!shortcut) return;
+    if (!shortcut || disabled) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== shortcut || event.metaKey || event.ctrlKey || event.altKey) return;
+      // The first field to claim a key keeps it
+      if (event.defaultPrevented || event.key !== shortcut) return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
       if ((event.target as Element | null)?.closest?.(EDITABLE)) return;
       event.preventDefault();
       inputRef.current?.focus();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [shortcut]);
+  }, [shortcut, disabled]);
 
   // Set the value natively so React's onChange still fires
   const clear = () => {
@@ -88,9 +94,8 @@ export function Field({
     input.focus();
   };
 
-  // Clicks on the frame's padding land in the input
-  const focusInput = (event: MouseEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
+  const focusInput = (event: PointerEvent<HTMLDivElement>) => {
+    if ((event.target as Element).closest("button, input")) return;
     event.preventDefault();
     inputRef.current?.focus();
   };
@@ -104,26 +109,28 @@ export function Field({
         interlock && [navStyles.notched, styles.linked],
         className,
       )}
-      onMouseDown={focusInput}
+      onPointerDown={focusInput}
     >
-      {start}
       <input
         {...rest}
         ref={setRef}
         type={type}
+        disabled={disabled}
         className={cn(
+          /* 16px: iOS zooms the page when a focused input is smaller */
           "peer min-w-0 flex-1 appearance-none bg-transparent px-0.5 py-2 text-base outline-none",
           "placeholder:text-muted placeholder:opacity-100 disabled:cursor-not-allowed",
           styles.input,
         )}
-        aria-keyshortcuts={shortcut}
+        aria-keyshortcuts={disabled ? undefined : shortcut}
       />
       <button
         type="button"
         className={cn(
-          "grid size-6 flex-none cursor-pointer place-items-center text-accent",
+          "grid size-6 flex-none cursor-pointer place-items-center text-accent-text",
           "peer-placeholder-shown:hidden peer-disabled:hidden",
-          styles.clear,
+          "focus-visible:outline-2 focus-visible:outline-foreground",
+          "forced-colors:text-[ButtonText] forced-colors:focus-visible:outline-[Highlight]",
         )}
         aria-label="Clear"
         onClick={clear}
@@ -133,16 +140,14 @@ export function Field({
       {shortcut && (
         <kbd
           className={cn(
-            "flex-none border border-line font-bold",
-            /* The / keycap centres in the clear button's 24px slot, so the two swap in place */
-            shortcut === "/" ? "mx-[3px] p-[3px]" : "px-[5px] py-px",
-            "text-step--3 leading-[1.4] tracking-[0.08em] text-muted",
-            /* The hint hides once it has done its job */
+            /* 18px plus 3px margins fills the clear button's 24px slot, so the two swap in place */
+            "m-[3px] grid size-[18px] flex-none place-items-center border border-line",
+            "text-step--3 leading-none font-bold text-muted",
             "group-focus-within:hidden peer-disabled:hidden peer-[:not(:placeholder-shown)]:hidden",
           )}
           aria-hidden="true"
         >
-          {shortcut === "/" ? <Icon name="forward-slash" className="block size-2.5" /> : shortcut}
+          {shortcut === "/" ? <Icon name="forward-slash" className="size-2.5" /> : shortcut}
         </kbd>
       )}
     </Plate>

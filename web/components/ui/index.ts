@@ -8,5 +8,5 @@ export {
   type ButtonSize,
 } from "./button";
 export { NavItem, NavList, type NavItemProps, type NavListProps } from "./nav-item";
-export { Field, type FieldProps } from "./field";
+export { Field, fieldTypes, type FieldProps, type FieldType } from "./field";
 export { Icon, iconNames, type IconName, type IconProps } from "./icon";

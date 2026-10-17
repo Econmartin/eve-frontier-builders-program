@@ -16,7 +16,6 @@ export type IconName = keyof typeof glyphs;
 
 export const iconNames = Object.keys(glyphs) as IconName[];
 
-/* Each glyph becomes one path of unit squares, built once rather than per render */
 const icons = Object.fromEntries(
   Object.entries(glyphs).map(([name, rows]) => [
     name,
@@ -34,13 +33,14 @@ export type IconProps = {
 } & Omit<ComponentPropsWithRef<"svg">, "children" | "viewBox">;
 
 /**
- * A pixel icon in the current text colour. Decorative by default; pass
- * `aria-label` when the icon is the only thing carrying its meaning.
+ * A pixel icon in the current text colour, sized to the text unless given a
+ * `size-*` class. Decorative by default; pass `aria-label` when the icon is
+ * the only thing carrying its meaning.
  *
  * @example
  * ```tsx
  * <button type="button" aria-label="Clear">
- *   <Icon name="cross" className="size-2.5 text-accent" />
+ *   <Icon name="cross" className="size-2.5 text-accent-text" />
  * </button>
  * ```
  */
@@ -55,7 +55,7 @@ export function Icon({ name, className, ...rest }: IconProps) {
       aria-hidden={labelled ? undefined : true}
       role={labelled ? "img" : undefined}
       {...rest}
-      className={cn("shrink-0 fill-current", className)}
+      className={cn("size-[1em] shrink-0 fill-current", className)}
     >
       <path d={d} />
     </svg>
