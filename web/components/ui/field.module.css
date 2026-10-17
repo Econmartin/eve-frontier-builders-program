@@ -1,109 +1,50 @@
-/* Field frame */
-.field {
-  --surface-key: 0;
-  --surface-clip-inner: var(--clip-diagonal-inner);
-  --surface-keyline: var(--color-control-line);
-  --surface-fill: var(--color-background);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  min-height: 42px;
-  padding: 0 16px;
-  color: var(--color-foreground);
-  cursor: text;
-  transition: background .2s;
-}
+/* Layered so Tailwind utilities (in @layer utilities) can override it.
+  Layout, type and colour are utilities in field.tsx; this file holds the
+  frame's states. The clear button and shortcut hint show and hide through
+  peer and group utilities, so display stays in one layer. */
+@layer components {
+  /* The 17/5 octagon, cut by Plate */
+  .field {
+    --cut-tl: 17px;
+    --cut-br: 17px;
+    --cut-tr: 5px;
+    --cut-bl: 5px;
+    --plate-keyline: var(--color-control-line);
+    --plate-fill: var(--color-background);
+    --field-inset: 16px;
+  }
 
-/* Interlocking field */
-.linked {
-  --surface-clip-inner: var(--clip-interlock-inner);
-  padding-left: 30px;
-  margin-left: calc(var(--nav-gap, 0px) - var(--nav-overlap, 0px));
-}
+  /* Interlocked: the notch tucks under the last item of a NavList, so the
+    field pulls back by the 17px cut less the row's gap. The polygon comes
+    from the nav module's .notched class. */
+  .linked {
+    /* 16px plus the 12px top wedge */
+    --field-inset: 28px;
+    margin-left: calc(var(--nav-gap, 7px) - 17px);
+  }
 
-/* Focus */
-.field:focus-within {
-  --surface-clip-inner: var(--clip-diagonal-inner-2);
-  --surface-keyline: var(--color-foreground);
-  --surface-fill: var(--color-card);
-}
+  .field:focus-within {
+    --plate-keyline: var(--color-foreground);
+    --plate-keyline-width: 2px;
+    --plate-fill: var(--color-card);
+  }
 
-.linked:focus-within { --surface-clip-inner: var(--clip-interlock-inner-2); }
+  .field:has(.input:disabled) {
+    --plate-keyline: var(--color-line);
+    --plate-fill: repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background);
+  }
 
-/* Native input */
-.input {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  padding: 8px 2px;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-size: 14px;
-  appearance: none;
-}
+  /* Drop the browser's own search decorations */
+  .input::-webkit-search-cancel-button,
+  .input::-webkit-search-decoration { appearance: none; }
 
-.input::placeholder { color: var(--color-muted); opacity: 1; }
-.input:focus { outline: none; }
-.input::-webkit-search-cancel-button,
-.input::-webkit-search-decoration { appearance: none; }
+  .clear:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 0; }
 
-/* Clear button, shown once the field has a value */
-.clear {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 20px;
-  height: 20px;
-  border: 0;
-  padding: 5px;
-  background: none;
-  color: var(--color-accent);
-  cursor: pointer;
-}
-
-.clear svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.6; }
-.clear:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 0; }
-.input:placeholder-shown ~ .clear { display: none; }
-
-/* Shortcut hint, hidden once it has done its job */
-.kbd {
-  flex: none;
-  border: 1px solid var(--color-line);
-  padding: 1px 5px;
-  font: inherit;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
-  color: var(--color-muted);
-}
-
-.field:focus-within .kbd,
-.input:not(:placeholder-shown) ~ .kbd { display: none; }
-
-/* Disabled */
-.field:has(.input:disabled) {
-  --surface-keyline: var(--color-line);
-  --surface-fill: repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background);
-  color: var(--color-muted);
-  cursor: not-allowed;
-}
-
-.input:disabled { cursor: not-allowed; }
-.input:disabled ~ :is(.clear, .kbd) { display: none; }
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .field { transition: none; }
-}
-
-/* Windows high-contrast mode */
-@media (forced-colors: active) {
-  .field { transition: none; }
-  .linked { margin-left: 0; padding-left: 16px; }
-  .field:focus-within { outline: 2px solid Highlight; outline-offset: 2px; }
-  .clear { color: ButtonText; }
-  .clear:focus-visible { outline-color: Highlight; }
+  @media (forced-colors: active) {
+    /* Forced colours drop the clip-path, so space the field instead */
+    .linked { --field-inset: 16px; margin-left: 6px; }
+    .field:focus-within { outline: 2px solid Highlight; outline-offset: 2px; }
+    .clear { color: ButtonText; }
+    .clear:focus-visible { outline-color: Highlight; }
+  }
 }

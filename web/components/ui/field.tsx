@@ -8,11 +8,12 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { Surface } from "./surface";
+import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./field.module.css";
+import navStyles from "./nav-item.module.css";
 
-type FieldProps = {
+export type FieldProps = {
   placeholder: string;
   interlock?: boolean;
   shortcut?: string;
@@ -25,14 +26,15 @@ const EDITABLE = "input, textarea, select, [contenteditable]:not([contenteditabl
  * A single-line text field with a clear button and an optional keyboard shortcut.
  *
  * `placeholder` is required: the clear button hides via `:placeholder-shown`.
+ * `interlock` notches the left edge so the field can sit after a `NavList`.
  *
  * @example
  * ```tsx
  * <Field
  *   type="search"
  *   name="q"
- *   placeholder="Search, or ask"
- *   aria-label="Search, or ask the assistant"
+ *   placeholder="Search"
+ *   aria-label="Search"
  *   shortcut="/"
  * />
  * ```
@@ -75,6 +77,7 @@ export function Field({
     return () => document.removeEventListener("keydown", onKey);
   }, [shortcut]);
 
+  // Set the value natively so React's onChange still fires
   const clear = () => {
     const input = inputRef.current;
     if (!input) return;
@@ -84,6 +87,7 @@ export function Field({
     input.focus();
   };
 
+  // Clicks on the frame's padding land in the input
   const focusInput = (event: MouseEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
     event.preventDefault();
@@ -91,9 +95,14 @@ export function Field({
   };
 
   return (
-    <Surface
-      shape={interlock ? "interlock" : "diagonal"}
-      className={cn(styles.field, interlock && styles.linked, className)}
+    <Plate
+      className={cn(
+        "group flex min-h-[2.75rem] min-w-0 cursor-text items-center gap-2 pr-4 pl-(--field-inset) text-foreground",
+        "has-[input:disabled]:cursor-not-allowed has-[input:disabled]:text-muted",
+        styles.field,
+        interlock && [navStyles.notched, styles.linked],
+        className,
+      )}
       onMouseDown={focusInput}
     >
       {start}
@@ -101,19 +110,40 @@ export function Field({
         {...rest}
         ref={setRef}
         type={type}
-        className={styles.input}
+        className={cn(
+          "peer min-w-0 flex-1 appearance-none bg-transparent px-0.5 py-2 text-base outline-none",
+          "placeholder:text-muted placeholder:opacity-100 disabled:cursor-not-allowed",
+          styles.input,
+        )}
         aria-keyshortcuts={shortcut}
       />
-      <button type="button" className={styles.clear} aria-label="Clear" onClick={clear}>
-        <svg viewBox="0 0 10 10" aria-hidden="true">
+      <button
+        type="button"
+        className={cn(
+          "grid size-6 flex-none cursor-pointer place-items-center text-accent",
+          "peer-placeholder-shown:hidden peer-disabled:hidden",
+          styles.clear,
+        )}
+        aria-label="Clear"
+        onClick={clear}
+      >
+        <svg viewBox="0 0 10 10" className="size-2.5 fill-none stroke-current stroke-[1.6]" aria-hidden="true">
           <path d="M1 1l8 8M9 1L1 9" />
         </svg>
       </button>
       {shortcut && (
-        <kbd className={styles.kbd} aria-hidden="true">
+        <kbd
+          className={cn(
+            "flex-none border border-line px-[5px] py-px font-bold",
+            "text-step--3 leading-[1.4] tracking-[0.08em] text-muted",
+            /* The hint hides once it has done its job */
+            "group-focus-within:hidden peer-disabled:hidden peer-[:not(:placeholder-shown)]:hidden",
+          )}
+          aria-hidden="true"
+        >
           {shortcut}
         </kbd>
       )}
-    </Surface>
+    </Plate>
   );
 }
