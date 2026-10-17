@@ -5,20 +5,26 @@ import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./button.module.css";
 
+export const buttonVariants = ["primary", "secondary"] as const;
+export const buttonSizes = ["sm", "md", "lg"] as const;
+
+export type ButtonVariant = (typeof buttonVariants)[number];
+export type ButtonSize = (typeof buttonSizes)[number];
+
 export type ButtonProps = {
-  variant?: "primary" | "secondary";
-  size?: "sm" | "md" | "lg";
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
 } & Omit<ComponentPropsWithRef<"button">, "style">;
 
 /* Medium is floored at the 44px WCAG 2.5.5 touch target; Small is a dense desktop size. */
-const sizes = {
+const sizes: Record<ButtonSize, string> = {
   sm: "px-s py-2xs text-step--1 leading-none",
   md: "px-m py-xs text-step--1 leading-none min-h-[2.75rem]",
   lg: "px-m py-s text-step-0 leading-none",
 };
 
-const variants = {
+const variants: Record<ButtonVariant, string> = {
   primary: "text-text-on-accent",
   secondary: "text-foreground",
 };
@@ -79,7 +85,7 @@ export function Button({
         {...rest}
         type={type}
         className={cn(
-          "group inline-flex flex-1 items-center justify-center whitespace-nowrap",
+          "group inline-flex flex-1 items-center justify-center font-heading font-bold whitespace-nowrap",
           "cursor-pointer aria-busy:cursor-progress disabled:cursor-not-allowed disabled:text-muted",
           styles.button,
           styles[variant],

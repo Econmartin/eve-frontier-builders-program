@@ -1,0 +1,9 @@
+/* theme(static) emits every token, not only the ones utilities use,
+  so the Foundation stories can read them */
+@import "../app/theme.css" theme(static);
+
+/* Docs pages are Storybook chrome; the story blocks inside them show the app's theme */
+.docs-story {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
