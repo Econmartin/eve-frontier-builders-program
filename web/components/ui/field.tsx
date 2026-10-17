@@ -22,6 +22,27 @@ export type FieldProps = {
 
 const EDITABLE = "input, textarea, select, [contenteditable]:not([contenteditable='false'])";
 
+/* Glyphs drawn as square cells, the same language as the theme toggle */
+const glyphs = {
+  clear: ["#...#", ".#.#.", "..#..", ".#.#.", "#...#"],
+  slash: ["....#", "...#.", "..#..", ".#...", "#...."],
+};
+
+function Glyph({ rows, className }: { rows: string[]; className?: string }) {
+  return (
+    <svg
+      viewBox={`0 0 ${rows[0].length} ${rows.length}`}
+      shapeRendering="crispEdges"
+      className={cn("fill-current", className)}
+      aria-hidden="true"
+    >
+      {rows.flatMap((row, y) =>
+        [...row].map((cell, x) => (cell === "#" ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" /> : null)),
+      )}
+    </svg>
+  );
+}
+
 /**
  * A single-line text field with a clear button and an optional keyboard shortcut.
  *
@@ -127,21 +148,21 @@ export function Field({
         aria-label="Clear"
         onClick={clear}
       >
-        <svg viewBox="0 0 10 10" className="size-2.5 fill-none stroke-current stroke-[1.6]" aria-hidden="true">
-          <path d="M1 1l8 8M9 1L1 9" />
-        </svg>
+        <Glyph rows={glyphs.clear} className="size-2.5" />
       </button>
       {shortcut && (
         <kbd
           className={cn(
-            "flex-none border border-line px-[5px] py-px font-bold",
+            "flex-none border border-line font-bold",
+            /* The / keycap centres in the clear button's 24px slot, so the two swap in place */
+            shortcut === "/" ? "mx-[3px] p-[3px]" : "px-[5px] py-px",
             "text-step--3 leading-[1.4] tracking-[0.08em] text-muted",
             /* The hint hides once it has done its job */
             "group-focus-within:hidden peer-disabled:hidden peer-[:not(:placeholder-shown)]:hidden",
           )}
           aria-hidden="true"
         >
-          {shortcut}
+          {shortcut === "/" ? <Glyph rows={glyphs.slash} className="block size-2.5" /> : shortcut}
         </kbd>
       )}
     </Plate>
