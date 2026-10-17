@@ -9,3 +9,4 @@ export {
 } from "./button";
 export { NavItem, NavList, type NavItemProps, type NavListProps } from "./nav-item";
 export { Field, type FieldProps } from "./field";
+export { Icon, iconNames, type IconName, type IconProps } from "./icon";

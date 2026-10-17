@@ -8,6 +8,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
+import { Icon } from "./icon";
 import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./field.module.css";
@@ -21,27 +22,6 @@ export type FieldProps = {
 } & Omit<ComponentPropsWithRef<"input">, "style" | "placeholder">;
 
 const EDITABLE = "input, textarea, select, [contenteditable]:not([contenteditable='false'])";
-
-/* Glyphs drawn as square cells, the same language as the theme toggle */
-const glyphs = {
-  clear: ["#...#", ".#.#.", "..#..", ".#.#.", "#...#"],
-  slash: ["....#", "...#.", "..#..", ".#...", "#...."],
-};
-
-function Glyph({ rows, className }: { rows: string[]; className?: string }) {
-  return (
-    <svg
-      viewBox={`0 0 ${rows[0].length} ${rows.length}`}
-      shapeRendering="crispEdges"
-      className={cn("fill-current", className)}
-      aria-hidden="true"
-    >
-      {rows.flatMap((row, y) =>
-        [...row].map((cell, x) => (cell === "#" ? <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" /> : null)),
-      )}
-    </svg>
-  );
-}
 
 /**
  * A single-line text field with a clear button and an optional keyboard shortcut.
@@ -148,7 +128,7 @@ export function Field({
         aria-label="Clear"
         onClick={clear}
       >
-        <Glyph rows={glyphs.clear} className="size-2.5" />
+        <Icon name="cross" className="size-2.5" />
       </button>
       {shortcut && (
         <kbd
@@ -162,7 +142,7 @@ export function Field({
           )}
           aria-hidden="true"
         >
-          {shortcut === "/" ? <Glyph rows={glyphs.slash} className="block size-2.5" /> : shortcut}
+          {shortcut === "/" ? <Icon name="forward-slash" className="block size-2.5" /> : shortcut}
         </kbd>
       )}
     </Plate>
