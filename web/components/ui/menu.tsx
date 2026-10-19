@@ -1,9 +1,9 @@
 "use client";
 
-import type { ComponentProps, ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { Icon } from "./icon";
-import { NavItem } from "./nav-item";
+import { NavItemControl, NavSlot } from "./nav-item";
 import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./menu.module.css";
@@ -33,43 +33,53 @@ export type MenuProps = {
  * ```
  */
 export function Menu({ label, defaultOpen, children }: MenuProps) {
+  // Opening moves focus onto the first link, which the browser treats as
+  // :focus-visible; the ring is kept for menus driven by the keyboard
+  const [input, setInput] = useState<"pointer" | "keyboard">("pointer");
+  const pointer = () => setInput("pointer");
+  const keyboard = () => setInput("keyboard");
+
   return (
-    <BaseMenu.Root modal={false} defaultOpen={defaultOpen}>
-      <BaseMenu.Trigger
-        openOnHover
-        closeDelay={240}
-        render={
-          <NavItem
-            as="button"
-            className="group"
-            indicator={
-              <Icon
-                name="caret"
-                className={cn(
-                  "size-2.5 text-muted transition-[rotate,color] duration-200 motion-reduce:transition-none",
-                  "group-hover:text-foreground group-focus-visible:text-foreground",
-                  "group-data-popup-open:rotate-180 group-data-popup-open:text-foreground",
-                )}
-              />
-            }
-          >
-            {label}
-          </NavItem>
-        }
-      />
-      <BaseMenu.Portal>
-        <BaseMenu.Positioner className="z-(--layer-menu) outline-none" align="start" sideOffset={6}>
-          <BaseMenu.Popup
-            // Hover moves focus onto items, which reads as :focus-visible; the ring is kept for keyboard use
-            onPointerMove={(event) => { event.currentTarget.dataset.input = "pointer"; }}
-            onKeyDown={(event) => { event.currentTarget.dataset.input = "keyboard"; }}
-            render={<Plate className={cn("min-w-60 p-px outline-none", styles.popup)} />}
-          >
-            <Plate className={cn("grid", styles.list)}>{children}</Plate>
-          </BaseMenu.Popup>
-        </BaseMenu.Positioner>
-      </BaseMenu.Portal>
-    </BaseMenu.Root>
+    // Listens on the slot, in the capture phase, so Base UI keeps its own
+    // handlers and can't stop these; the portalled popup's events still pass
+    // through here in React's tree
+    <NavSlot onPointerEnter={pointer} onPointerDownCapture={pointer} onKeyDownCapture={keyboard}>
+      <BaseMenu.Root modal={false} defaultOpen={defaultOpen}>
+        <BaseMenu.Trigger
+          openOnHover
+          closeDelay={240}
+          render={
+            <NavItemControl
+              as="button"
+              className="group"
+              indicator={
+                <Icon
+                  name="caret"
+                  className={cn(
+                    "size-2.5 text-muted transition-[rotate,color] duration-200 motion-reduce:transition-none",
+                    "group-hover:text-foreground group-focus-visible:text-foreground",
+                    "group-data-popup-open:rotate-180 group-data-popup-open:text-foreground",
+                  )}
+                />
+              }
+            >
+              {label}
+            </NavItemControl>
+          }
+        />
+        <BaseMenu.Portal>
+          <BaseMenu.Positioner className="z-(--layer-menu) outline-none" align="start" sideOffset={6}>
+            <BaseMenu.Popup
+              data-input={input}
+              onPointerMove={pointer}
+              render={<Plate className={cn("min-w-60 p-px outline-none", styles.popup)} />}
+            >
+              <Plate className={cn("grid", styles.list)}>{children}</Plate>
+            </BaseMenu.Popup>
+          </BaseMenu.Positioner>
+        </BaseMenu.Portal>
+      </BaseMenu.Root>
+    </NavSlot>
   );
 }
 

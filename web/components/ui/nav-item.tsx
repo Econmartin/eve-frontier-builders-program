@@ -31,25 +31,40 @@ export type NavListProps = ComponentPropsWithRef<"nav">;
  * </NavList>
  * ```
  */
-export function NavItem({ as = "a", current = false, indicator, className, children, ...rest }: NavItemProps) {
+export function NavItem(props: NavItemProps) {
   return (
-    <li className={styles.slot}>
-      <Plate
-        as={as}
-        {...(rest as ComponentPropsWithRef<"a">)}
-        className={cn(
-          "inline-flex min-h-[2.75rem] items-center gap-2.5 py-3 pr-6 pl-(--nav-inset) whitespace-nowrap",
-          as === "button" && "cursor-pointer",
-          "font-heading text-step-0 leading-none font-bold tracking-[0.02em] text-foreground",
-          styles.item,
-          className,
-        )}
-        aria-current={current ? "page" : undefined}
-      >
-        {indicator ?? <span className={cn("h-3 w-1 flex-none", styles.lamp)} aria-hidden="true" />}
-        {children}
-      </Plate>
-    </li>
+    <NavSlot>
+      <NavItemControl {...props} />
+    </NavSlot>
+  );
+}
+
+/**
+ * A `NavList` slot. `Menu` puts its trigger and popup in one, so Base UI's
+ * focus guards render inside the list item instead of between items.
+ */
+export function NavSlot({ className, ...rest }: ComponentPropsWithRef<"li">) {
+  return <li {...rest} className={cn(styles.slot, className)} />;
+}
+
+/** The item without its slot, for rendering through another component such as a menu trigger. */
+export function NavItemControl({ as = "a", current = false, indicator, className, children, ...rest }: NavItemProps) {
+  return (
+    <Plate
+      as={as}
+      {...(rest as ComponentPropsWithRef<"a">)}
+      className={cn(
+        "inline-flex min-h-[2.75rem] items-center gap-2.5 py-3 pr-6 pl-(--nav-inset) whitespace-nowrap",
+        as === "button" && "cursor-pointer",
+        "font-heading text-step-0 leading-none font-bold tracking-[0.02em] text-foreground",
+        styles.item,
+        className,
+      )}
+      aria-current={current ? "page" : undefined}
+    >
+      {indicator ?? <span className={cn("h-3 w-1 flex-none", styles.lamp)} aria-hidden="true" />}
+      {children}
+    </Plate>
   );
 }
 

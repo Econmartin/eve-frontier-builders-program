@@ -41,12 +41,8 @@
   .link[data-highlighted],
   .link[aria-current] { --plate-fill: var(--color-card); }
 
-  .link:focus-visible {
-    --plate-keyline: var(--color-foreground);
-    --plate-fill: var(--color-card);
-  }
-
-  .popup[data-input="pointer"] .link:focus-visible { --plate-keyline: transparent; }
+  .link:focus-visible { --plate-fill: var(--color-card); }
+  .popup[data-input="keyboard"] .link:focus-visible { --plate-keyline: var(--color-foreground); }
 
   /* Current page: the lit lamp from the nav, in the link's left padding */
   .link[aria-current]::after {
