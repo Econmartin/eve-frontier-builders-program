@@ -45,8 +45,11 @@ export function Menu({ label, defaultOpen, children }: MenuProps) {
     // through here in React's tree
     <NavSlot onPointerEnter={pointer} onPointerDownCapture={pointer} onKeyDownCapture={keyboard}>
       <BaseMenu.Root modal={false} defaultOpen={defaultOpen}>
+        {/* Opens at once on hover, like the nav's own hover states; the close
+          delay lets the pointer cross the gap to the popup */}
         <BaseMenu.Trigger
           openOnHover
+          delay={0}
           closeDelay={240}
           render={
             <NavItemControl
