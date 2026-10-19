@@ -3,17 +3,25 @@ import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./nav-item.module.css";
 
-export type NavItemProps = {
+type NavItemOwnProps = {
   current?: boolean;
+  /** Replaces the lamp, e.g. a menu trigger's caret. */
+  indicator?: ReactNode;
   children: ReactNode;
-} & Omit<ComponentPropsWithRef<"a">, "style">;
+};
+
+export type NavItemProps = NavItemOwnProps &
+  (
+    | ({ as?: "a" } & Omit<ComponentPropsWithRef<"a">, "style">)
+    | ({ as: "button" } & Omit<ComponentPropsWithRef<"button">, "style">)
+  );
 
 export type NavListProps = ComponentPropsWithRef<"nav">;
 
 /**
  * An interlocking navigation link for use inside `NavList`. The first item
  * takes the full octagon and each following item notches into the one
- * before it.
+ * before it. `as="button"` renders a button, as `Menu` does for its trigger.
  *
  * @example
  * ```tsx
@@ -23,21 +31,22 @@ export type NavListProps = ComponentPropsWithRef<"nav">;
  * </NavList>
  * ```
  */
-export function NavItem({ current = false, className, children, ...rest }: NavItemProps) {
+export function NavItem({ as = "a", current = false, indicator, className, children, ...rest }: NavItemProps) {
   return (
     <li className={styles.slot}>
       <Plate
-        as="a"
-        {...rest}
+        as={as}
+        {...(rest as ComponentPropsWithRef<"a">)}
         className={cn(
           "inline-flex min-h-[2.75rem] items-center gap-2.5 py-3 pr-6 pl-(--nav-inset) whitespace-nowrap",
+          as === "button" && "cursor-pointer",
           "font-heading text-step-0 leading-none font-bold tracking-[0.02em] text-foreground",
           styles.item,
           className,
         )}
         aria-current={current ? "page" : undefined}
       >
-        <span className={cn("h-3 w-1 flex-none", styles.lamp)} aria-hidden="true" />
+        {indicator ?? <span className={cn("h-3 w-1 flex-none", styles.lamp)} aria-hidden="true" />}
         {children}
       </Plate>
     </li>

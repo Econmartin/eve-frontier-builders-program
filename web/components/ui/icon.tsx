@@ -10,6 +10,8 @@ import { cn } from "@/lib/cn";
 const glyphs = {
   cross: ["#...#", ".#.#.", "..#..", ".#.#.", "#...#"],
   "forward-slash": ["....#", "...#.", "..#..", ".#...", "#...."],
+  /* Points down; rotate-180 turns it over when a menu opens */
+  caret: [".....", "#...#", ".#.#.", "..#..", "....."],
 } satisfies Record<string, string[]>;
 
 export type IconName = keyof typeof glyphs;

@@ -2,61 +2,70 @@
 
 import type { ComponentProps, ReactNode } from "react";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
+import { Icon } from "./icon";
 import { NavItem } from "./nav-item";
-import { Surface } from "./surface";
+import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./menu.module.css";
 
-type MenuProps = {
+export type MenuProps = {
   label: ReactNode;
-  first?: boolean;
+  defaultOpen?: boolean;
   children: ReactNode;
 };
 
 /**
- * A navigation dropdown whose trigger interlocks with `NavItem`s in a `NavList`.
- *
- * The popup portals to the body, so the bar's `clip-path` can't cut it off.
+ * A navigation dropdown whose trigger is a `NavItem`, so it interlocks with
+ * the items around it in a `NavList`. The popup portals to the body, so the
+ * row's clip-path can't cut it off.
  *
  * @example
  * ```tsx
  * <NavList aria-label="Primary">
- *   <NavItem href="/" first>Learn</NavItem>
+ *   <NavItem href="/pathways">Pathways</NavItem>
  *   <Menu label="More">
- *     <MenuLink href="/tools">Tools</MenuLink>
+ *     <MenuLink href="/docs">Documentation</MenuLink>
+ *     <MenuLink href="/glossary" sub>Glossary</MenuLink>
  *     <MenuSeparator />
- *     <MenuLink href="/changelog" sub>Changelog</MenuLink>
+ *     <MenuLink href="/about">About</MenuLink>
  *   </Menu>
  * </NavList>
  * ```
  */
-export function Menu({ label, first = false, children }: MenuProps) {
+export function Menu({ label, defaultOpen, children }: MenuProps) {
   return (
-    <BaseMenu.Root modal={false}>
+    <BaseMenu.Root modal={false} defaultOpen={defaultOpen}>
       <BaseMenu.Trigger
         openOnHover
         closeDelay={240}
         render={
           <NavItem
             as="button"
-            first={first}
-            indicator={<span className={styles.caret} aria-hidden="true" />}
-            className={styles.trigger}
+            className="group"
+            indicator={
+              <Icon
+                name="caret"
+                className={cn(
+                  "size-2.5 text-muted transition-[rotate,color] duration-200 motion-reduce:transition-none",
+                  "group-hover:text-foreground group-focus-visible:text-foreground",
+                  "group-data-popup-open:rotate-180 group-data-popup-open:text-foreground",
+                )}
+              />
+            }
           >
             {label}
           </NavItem>
         }
       />
       <BaseMenu.Portal>
-        <BaseMenu.Positioner className={styles.positioner} align="start" sideOffset={6}>
+        <BaseMenu.Positioner className="z-(--layer-menu) outline-none" align="start" sideOffset={6}>
           <BaseMenu.Popup
+            // Hover moves focus onto items, which reads as :focus-visible; the ring is kept for keyboard use
             onPointerMove={(event) => { event.currentTarget.dataset.input = "pointer"; }}
             onKeyDown={(event) => { event.currentTarget.dataset.input = "keyboard"; }}
-            render={
-              <Surface shape="card" fill="var(--color-background)" className={styles.popup} />
-            }
+            render={<Plate className={cn("min-w-60 p-px outline-none", styles.popup)} />}
           >
-            <div className={styles.list}>{children}</div>
+            <Plate className={cn("grid", styles.list)}>{children}</Plate>
           </BaseMenu.Popup>
         </BaseMenu.Positioner>
       </BaseMenu.Portal>
@@ -64,7 +73,7 @@ export function Menu({ label, first = false, children }: MenuProps) {
   );
 }
 
-type MenuLinkProps = {
+export type MenuLinkProps = {
   sub?: boolean;
   current?: boolean;
 } & ComponentProps<typeof BaseMenu.LinkItem>;
@@ -75,12 +84,14 @@ export function MenuLink({ sub = false, current = false, className, ...rest }: M
     <BaseMenu.LinkItem
       closeOnClick
       {...rest}
+      render={<Plate as="a" />}
       aria-current={current ? "page" : undefined}
       className={(state) =>
         cn(
+          "block py-2.5 pr-5 text-step--1 leading-5 font-bold tracking-[0.06em] text-foreground uppercase no-underline outline-none",
+          sub ? "pl-8" : "pl-4",
           styles.link,
           sub && styles.sub,
-          current && styles.current,
           typeof className === "function" ? className(state) : className,
         )
       }
@@ -90,5 +101,5 @@ export function MenuLink({ sub = false, current = false, className, ...rest }: M
 
 /** A divider between groups of `MenuLink`s. */
 export function MenuSeparator() {
-  return <BaseMenu.Separator className={styles.separator} />;
+  return <BaseMenu.Separator className={cn("border-t border-line", styles.separator)} />;
 }
