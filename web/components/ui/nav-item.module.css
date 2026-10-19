@@ -49,8 +49,13 @@
     outline: none;
   }
 
-  /* Lamp: dim at rest, lit on hover, focus and the current page */
+  /* Lamp: dim at rest, lit on hover, focus and the current page. The lit
+    look is two properties so Menu can light its own lamps */
   .lamp {
+    --nav-lamp-lit: var(--color-accent);
+    --nav-lamp-glow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
+      0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
     background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
     transition: background .14s ease, box-shadow .14s ease;
@@ -58,19 +63,15 @@
 
   .item:focus-visible .lamp,
   .item[aria-current] .lamp {
-    background: var(--color-accent);
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
-      0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+    background: var(--nav-lamp-lit);
+    box-shadow: var(--nav-lamp-glow);
   }
 
   /* Hover is gated so it can't stick after a tap */
   @media (hover: hover) {
     .item:hover .lamp {
-      background: var(--color-accent);
-      box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
-        0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+      background: var(--nav-lamp-lit);
+      box-shadow: var(--nav-lamp-glow);
     }
   }
 
@@ -89,9 +90,7 @@
     .slot + .slot { margin-left: 0; }
     .slot + .slot .item { --nav-inset: 24px; }
 
-    .lamp { background: ButtonText; box-shadow: none; }
-    .item:is(:hover, :focus-visible) .lamp,
-    .item[aria-current] .lamp { background: Highlight; box-shadow: none; }
+    .lamp { --nav-lamp-lit: Highlight; --nav-lamp-glow: none; background: ButtonText; box-shadow: none; }
 
     .item:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
   }

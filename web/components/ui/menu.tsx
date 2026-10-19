@@ -9,6 +9,7 @@ import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import { EXTERNAL, isExternal } from "@/lib/external";
 import styles from "./menu.module.css";
+import navStyles from "./nav-item.module.css";
 
 export type MenuProps = {
   label: ReactNode;
@@ -48,16 +49,15 @@ export function Menu({ label, children }: MenuProps) {
     return () => window.removeEventListener("resize", onResize);
   }, [open]);
 
-  // Opening moves focus onto the first link, which the browser treats as
-  // :focus-visible; the ring is kept for menus driven by the keyboard
+  // Opening focuses the first link, which counts as :focus-visible, so the
+  // ring is kept for keyboard-driven menus
   const [input, setInput] = useState<"pointer" | "keyboard">("pointer");
   const pointer = () => setInput("pointer");
   const keyboard = () => setInput("keyboard");
 
   return (
-    // Listens on the slot, in the capture phase, so Base UI keeps its own
-    // handlers and can't stop these; the portalled popup's events still pass
-    // through here in React's tree
+    // Capture phase on the slot: Base UI keeps its handlers, and the
+    // portalled popup's events still pass through here in React's tree
     <NavSlot onPointerDownCapture={pointer} onKeyDownCapture={keyboard}>
       <BaseMenu.Root modal={false} open={open} onOpenChange={setOpen}>
         <BaseMenu.Trigger
@@ -97,39 +97,37 @@ export function Menu({ label, children }: MenuProps) {
 }
 
 export type MenuLinkProps = {
+  href: string;
   sub?: boolean;
   current?: boolean;
-} & ComponentProps<typeof BaseMenu.LinkItem>;
+  className?: string;
+} & Omit<ComponentProps<typeof BaseMenu.LinkItem>, "href" | "className">;
 
 /**
  * A link inside `Menu`; `sub` indents it under the link before, `current`
  * marks the page. Links on the site go through Next's `Link`; links off it
  * open in a new tab.
  */
-export function MenuLink({ sub = false, current = false, href, className, children, ...rest }: MenuLinkProps) {
-  const external = href ? isExternal(href) : false;
+export function MenuLink({ href, sub = false, current = false, className, children, ...rest }: MenuLinkProps) {
+  const external = isExternal(href);
 
   return (
     <BaseMenu.LinkItem
       // Base UI leaves link items open by default
       closeOnClick
       {...rest}
-      render={
-        external ? <Plate as="a" href={href} {...EXTERNAL} /> : href ? <Plate as={Link} href={href} /> : <Plate as="a" />
-      }
+      render={external ? <Plate as="a" href={href} {...EXTERNAL} /> : <Plate as={Link} href={href} />}
       aria-current={current ? "page" : undefined}
-      className={(state) =>
-        cn(
-          "flex items-center gap-3 py-3 pr-5 text-step--1 leading-none font-bold tracking-[0.06em] text-foreground uppercase no-underline outline-none",
-          sub ? "pl-8" : "pl-4",
-          styles.link,
-          sub && styles.sub,
-          typeof className === "function" ? className(state) : className,
-        )
-      }
+      className={cn(
+        "flex items-center gap-3 py-3 pr-5 text-step--1 leading-none font-bold tracking-[0.06em] text-foreground uppercase no-underline outline-none",
+        sub ? "pl-8" : "pl-4",
+        styles.link,
+        sub && styles.sub,
+        className,
+      )}
     >
       {sub && <span className={styles.branch} aria-hidden="true" />}
-      <span className={cn("h-2 w-1 flex-none", styles.lamp)} aria-hidden="true" />
+      <span className={cn("h-2 w-1 flex-none", navStyles.lamp, styles.lamp)} aria-hidden="true" />
       {children}
       {external && (
         <>
@@ -143,5 +141,5 @@ export function MenuLink({ sub = false, current = false, href, className, childr
 
 /** A divider between groups of `MenuLink`s. */
 export function MenuSeparator() {
-  return <BaseMenu.Separator className={cn("border-t border-line", styles.separator)} />;
+  return <BaseMenu.Separator className="border-t border-line" />;
 }

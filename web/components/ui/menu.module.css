@@ -1,8 +1,7 @@
 /* Layered so Tailwind utilities (in @layer utilities) can override it.
   Layout, type and colour are utilities in menu.tsx; this file holds the
-  plate states, the lamps, the branch lines and the motion. */
+  plate states, the branch lines and the motion. */
 @layer components {
-  /* Popup: Plate's default top-right and bottom-left cuts */
   .popup {
     --plate-fill: var(--color-background);
     transition: opacity .18s ease, translate .26s cubic-bezier(.2,.7,.2,1);
@@ -25,9 +24,8 @@
     --plate-fill: transparent;
   }
 
-  /* Links are plates too: the fill runs edge to edge, and on keyboard focus
-    a 2px keyline becomes the ring, following the list's corner cuts on the
-    first and last link */
+  /* Links are plates too: the fill runs edge to edge, and keyboard focus
+    draws a 2px keyline that follows the list's cuts on the first and last */
   .link {
     --cut-tr: 0px;
     --cut-bl: 0px;
@@ -35,33 +33,25 @@
     --plate-keyline-width: 0px;
     --plate-fill: transparent;
   }
-  /* Plate paints the keyline under the fill, so while the ring is dark any
-    fade of the fill shows it through the row. Scoped to outrank Plate. */
-  .list .link::before { transition: none; }
   .link:first-child { --cut-tr: var(--menu-cut); }
   .link:last-child { --cut-bl: var(--menu-cut); }
+
+  /* Plate paints the keyline under the fill, so a fading fill would show
+    the ring through the row. Scoped to outrank Plate's own rule. */
+  .list .link::before { transition: none; }
 
   .link[data-highlighted],
   .link[aria-current] { --plate-fill: var(--color-card); }
 
-  .link:focus-visible { --plate-fill: var(--color-card); }
   .popup[data-input="keyboard"] .link:focus-visible {
     --plate-keyline: var(--color-foreground);
     --plate-keyline-width: 2px;
   }
 
-  /* Lamp, as on the tabs: dim at rest, lit on highlight, focus and the current page */
-  .lamp {
-    background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
-    transition: background .14s ease, box-shadow .14s ease;
-  }
-
-  .link:is([data-highlighted], :focus-visible, [aria-current]) .lamp {
-    background: var(--color-accent);
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
-      0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  /* The nav module's lamp, lit on highlight and the current page */
+  .link:is([data-highlighted], [aria-current]) .lamp {
+    background: var(--nav-lamp-lit);
+    box-shadow: var(--nav-lamp-glow);
   }
 
   /* Branch from below a parent's lamp to each child's, 2px so it centres on
@@ -95,18 +85,14 @@
   .branch::before { top: 0; bottom: calc(50% - 1px); left: 0; border-left: 2px solid var(--color-line); }
   .branch::after { top: calc(50% - 1px); right: 0; left: 2px; border-top: 2px solid var(--color-line); }
 
-  /* More children: the line carries on to the next one */
+  /* The line carries on past a child that has another after it */
   .sub:has(+ .sub) .branch::before { bottom: 0; }
 
   @media (prefers-reduced-motion: reduce) {
-    .popup,
-    .lamp { transition: none; }
+    .popup { transition: none; }
   }
 
   @media (forced-colors: active) {
-    .popup { transition: none; }
     .link[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
-    .lamp { background: ButtonText; box-shadow: none; transition: none; }
-    .link:is([data-highlighted], :focus-visible, [aria-current]) .lamp { background: Highlight; box-shadow: none; }
   }
 }
