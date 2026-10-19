@@ -24,12 +24,12 @@ const meta = {
         <NavItem href="#">Pathways</NavItem>
         <NavItem href="#">Courses</NavItem>
         <Menu {...args}>
-          <MenuLink href="#">Documentation</MenuLink>
-          <MenuLink href="#" sub current>
+          <MenuLink href="#docs">Documentation</MenuLink>
+          <MenuLink href="#glossary" sub current>
             Glossary
           </MenuLink>
           <MenuSeparator />
-          <MenuLink href="#">About</MenuLink>
+          <MenuLink href="#about">About</MenuLink>
         </Menu>
       </NavList>
     </div>
@@ -48,31 +48,35 @@ export const All: Story = {
         <NavList aria-label="Closed">
           <NavItem href="#">Pathways</NavItem>
           <Menu {...args} label="More">
-            <MenuLink href="#">Documentation</MenuLink>
-            <MenuLink href="#">About</MenuLink>
+            <MenuLink href="#docs">Documentation</MenuLink>
+            <MenuLink href="#about">About</MenuLink>
           </Menu>
         </NavList>
       </Section>
       <Section title="as the first item">
         <NavList aria-label="Menu first">
           <Menu {...args} label="More">
-            <MenuLink href="#">Documentation</MenuLink>
-            <MenuLink href="#">About</MenuLink>
+            <MenuLink href="#docs">Documentation</MenuLink>
+            <MenuLink href="#about">About</MenuLink>
           </Menu>
           <NavItem href="#">Pathways</NavItem>
         </NavList>
       </Section>
-      <Section title="open, with a sub link, separator and current page">
-        <div className="min-h-48">
+      <Section title="open: children, a separator, the current page and an external link">
+        <div className="min-h-72">
           <NavList aria-label="Open">
-            <NavItem href="#">Pathways</NavItem>
+            <NavItem href="#pathways">Pathways</NavItem>
             <Menu {...args} label="More" defaultOpen>
-              <MenuLink href="#">Documentation</MenuLink>
-              <MenuLink href="#" sub current>
+              <MenuLink href="#docs">Documentation</MenuLink>
+              <MenuLink href="#glossary" sub current>
                 Glossary
               </MenuLink>
+              <MenuLink href="#reference" sub>
+                Reference
+              </MenuLink>
               <MenuSeparator />
-              <MenuLink href="#">About</MenuLink>
+              <MenuLink href="#about">About</MenuLink>
+              <MenuLink href="https://docs.evefrontier.com/">Builder docs</MenuLink>
             </Menu>
           </NavList>
         </div>

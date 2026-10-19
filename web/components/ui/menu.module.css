@@ -1,6 +1,6 @@
 /* Layered so Tailwind utilities (in @layer utilities) can override it.
   Layout, type and colour are utilities in menu.tsx; this file holds the
-  plate states, the current-page lamp and the motion. */
+  plate states, the lamps, the branch lines and the motion. */
 @layer components {
   /* Popup: Plate's default top-right and bottom-left cuts */
   .popup {
@@ -44,31 +44,67 @@
   .link:focus-visible { --plate-fill: var(--color-card); }
   .popup[data-input="keyboard"] .link:focus-visible { --plate-keyline: var(--color-foreground); }
 
-  /* Current page: the lit lamp from the nav, in the link's left padding */
-  .link[aria-current]::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 8px;
-    width: 4px;
-    height: 12px;
-    translate: 0 -50%;
+  /* Lamp, as on the tabs: dim at rest, lit on highlight, focus and the current page */
+  .lamp {
+    background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
+    transition: background .14s ease, box-shadow .14s ease;
+  }
+
+  .link:is([data-highlighted], :focus-visible, [aria-current]) .lamp {
     background: var(--color-accent);
     box-shadow:
       0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
       0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
   }
 
-  .sub[aria-current]::after { left: 24px; }
+  /* Branch from below a parent's lamp to each child's, 2px so it centres on
+    the 4px lamp at 16–20px. Links clip their contents, so the parent draws
+    the stub below its lamp and each child draws on from its own top. */
+  .link:not(.sub):has(+ .sub)::after {
+    content: "";
+    position: absolute;
+    top: calc(50% + 8px);
+    bottom: 0;
+    left: 17px;
+    border-left: 2px solid var(--color-line);
+  }
+
+  .branch {
+    position: absolute;
+    inset-block: 0;
+    left: 17px;
+    width: 11px;
+    pointer-events: none;
+  }
+
+  .branch::before,
+  .branch::after {
+    content: "";
+    position: absolute;
+  }
+
+  /* The line colour is translucent, so the strokes must never overlap: the
+    vertical runs to the foot of the tick, and the tick starts beside it */
+  .branch::before { top: 0; bottom: calc(50% - 1px); left: 0; border-left: 2px solid var(--color-line); }
+  .branch::after { top: calc(50% - 1px); right: 0; left: 2px; border-top: 2px solid var(--color-line); }
+
+  /* More children: the line carries on to the next one */
+  .sub:has(+ .sub) .branch::before { bottom: 0; }
 
   @media (prefers-reduced-motion: reduce) {
-    .popup { transition: none; }
+    .popup,
+    .lamp { transition: none; }
   }
 
   @media (forced-colors: active) {
     .popup { transition: none; }
     .link[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
     .separator { border-top-color: CanvasText; }
-    .link[aria-current]::after { border-left: 4px solid Highlight; background: none; box-shadow: none; }
+    .lamp { background: ButtonText; box-shadow: none; transition: none; }
+    .link:is([data-highlighted], :focus-visible, [aria-current]) .lamp { background: Highlight; box-shadow: none; }
+    .link:not(.sub):has(+ .sub)::after,
+    .branch::before,
+    .branch::after { border-color: CanvasText; }
   }
 }

@@ -12,6 +12,8 @@ const glyphs = {
   "forward-slash": ["....#", "...#.", "..#..", ".#...", "#...."],
   /* Points down; rotate-180 turns it over when a menu opens */
   caret: [".....", "#...#", ".#.#.", "..#..", "....."],
+  /* Up and to the right, after a link that opens in a new tab */
+  external: ["..###", "...##", "..#.#", ".#...", "#...."],
 } satisfies Record<string, string[]>;
 
 export type IconName = keyof typeof glyphs;

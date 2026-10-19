@@ -1,4 +1,5 @@
-import type { ComponentPropsWithRef, ReactNode } from "react";
+import type { ComponentPropsWithRef, ElementType, ReactNode } from "react";
+import Link from "next/link";
 import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
 import styles from "./nav-item.module.css";
@@ -21,7 +22,8 @@ export type NavListProps = ComponentPropsWithRef<"nav">;
 /**
  * An interlocking navigation link for use inside `NavList`. The first item
  * takes the full octagon and each following item notches into the one
- * before it. `as="button"` renders a button, as `Menu` does for its trigger.
+ * before it. Links go through Next's `Link`; `as="button"` renders a button,
+ * as `Menu` does for its trigger.
  *
  * @example
  * ```tsx
@@ -49,9 +51,11 @@ export function NavSlot({ className, ...rest }: ComponentPropsWithRef<"li">) {
 
 /** The item without its slot, for rendering through another component such as a menu trigger. */
 export function NavItemControl({ as = "a", current = false, indicator, className, children, ...rest }: NavItemProps) {
+  const Component: ElementType = as === "button" ? "button" : "href" in rest && rest.href ? Link : "a";
+
   return (
     <Plate
-      as={as}
+      as={Component}
       {...(rest as ComponentPropsWithRef<"a">)}
       className={cn(
         "inline-flex min-h-[2.75rem] items-center gap-2.5 py-3 pr-6 pl-(--nav-inset) whitespace-nowrap",
