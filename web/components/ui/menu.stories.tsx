@@ -9,30 +9,26 @@ const meta = {
   subcomponents: { MenuLink, MenuSeparator },
   args: {
     label: "More",
-    defaultOpen: false,
     children: null,
   },
   argTypes: {
     label: { control: "text" },
-    defaultOpen: { control: "boolean" },
     children: { table: { disable: true } },
   },
   /* The trigger is a NavItem, so every story sits in a NavList */
   render: (args) => (
-    <div className="min-h-64">
-      <NavList aria-label="Example">
-        <NavItem href="#">Pathways</NavItem>
-        <NavItem href="#">Courses</NavItem>
-        <Menu {...args}>
-          <MenuLink href="#docs">Documentation</MenuLink>
-          <MenuLink href="#glossary" sub current>
-            Glossary
-          </MenuLink>
-          <MenuSeparator />
-          <MenuLink href="#about">About</MenuLink>
-        </Menu>
-      </NavList>
-    </div>
+    <NavList aria-label="Example">
+      <NavItem href="#">Pathways</NavItem>
+      <NavItem href="#">Courses</NavItem>
+      <Menu {...args}>
+        <MenuLink href="#docs">Documentation</MenuLink>
+        <MenuLink href="#glossary" sub current>
+          Glossary
+        </MenuLink>
+        <MenuSeparator />
+        <MenuLink href="#about">About</MenuLink>
+      </Menu>
+    </NavList>
   ),
 } satisfies Meta<typeof Menu>;
 
@@ -40,14 +36,14 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** The trigger in a row, closed and open. Hover or focus the trigger to open it; arrow keys move through links. */
+/** The trigger in a row, and a fuller menu. Click the trigger or press Enter to open it; arrow keys move through links. */
 export const All: Story = {
   render: (args) => (
     <div className="grid gap-l">
-      <Section title="closed">
-        <NavList aria-label="Closed">
+      <Section title="in a row">
+        <NavList aria-label="In a row">
           <NavItem href="#">Pathways</NavItem>
-          <Menu {...args} label="More">
+          <Menu {...args}>
             <MenuLink href="#docs">Documentation</MenuLink>
             <MenuLink href="#about">About</MenuLink>
           </Menu>
@@ -55,31 +51,29 @@ export const All: Story = {
       </Section>
       <Section title="as the first item">
         <NavList aria-label="Menu first">
-          <Menu {...args} label="More">
+          <Menu {...args}>
             <MenuLink href="#docs">Documentation</MenuLink>
             <MenuLink href="#about">About</MenuLink>
           </Menu>
           <NavItem href="#">Pathways</NavItem>
         </NavList>
       </Section>
-      <Section title="open: children, a separator, the current page and an external link">
-        <div className="min-h-72">
-          <NavList aria-label="Open">
-            <NavItem href="#pathways">Pathways</NavItem>
-            <Menu {...args} label="More" defaultOpen>
-              <MenuLink href="#docs">Documentation</MenuLink>
-              <MenuLink href="#glossary" sub current>
-                Glossary
-              </MenuLink>
-              <MenuLink href="#reference" sub>
-                Reference
-              </MenuLink>
-              <MenuSeparator />
-              <MenuLink href="#about">About</MenuLink>
-              <MenuLink href="https://docs.evefrontier.com/">Builder docs</MenuLink>
-            </Menu>
-          </NavList>
-        </div>
+      <Section title="children, a separator, the current page and an external link">
+        <NavList aria-label="Fuller menu">
+          <NavItem href="#pathways">Pathways</NavItem>
+          <Menu {...args}>
+            <MenuLink href="#docs">Documentation</MenuLink>
+            <MenuLink href="#glossary" sub current>
+              Glossary
+            </MenuLink>
+            <MenuLink href="#reference" sub>
+              Reference
+            </MenuLink>
+            <MenuSeparator />
+            <MenuLink href="#about">About</MenuLink>
+            <MenuLink href="https://docs.evefrontier.com/">Builder docs</MenuLink>
+          </Menu>
+        </NavList>
       </Section>
     </div>
   ),

@@ -12,7 +12,6 @@ import styles from "./menu.module.css";
 
 export type MenuProps = {
   label: ReactNode;
-  defaultOpen?: boolean;
   children: ReactNode;
 };
 
@@ -35,8 +34,8 @@ export type MenuProps = {
  * </NavList>
  * ```
  */
-export function Menu({ label, defaultOpen = false, children }: MenuProps) {
-  const [open, setOpen] = useState(defaultOpen);
+export function Menu({ label, children }: MenuProps) {
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -59,14 +58,9 @@ export function Menu({ label, defaultOpen = false, children }: MenuProps) {
     // Listens on the slot, in the capture phase, so Base UI keeps its own
     // handlers and can't stop these; the portalled popup's events still pass
     // through here in React's tree
-    <NavSlot onPointerEnter={pointer} onPointerDownCapture={pointer} onKeyDownCapture={keyboard}>
+    <NavSlot onPointerDownCapture={pointer} onKeyDownCapture={keyboard}>
       <BaseMenu.Root modal={false} open={open} onOpenChange={setOpen}>
-        {/* Opens at once on hover, like the nav's own hover states; the close
-          delay lets the pointer cross the gap to the popup */}
         <BaseMenu.Trigger
-          openOnHover
-          delay={0}
-          closeDelay={240}
           render={
             <NavItemControl
               as="button"
@@ -117,6 +111,7 @@ export function MenuLink({ sub = false, current = false, href, className, childr
 
   return (
     <BaseMenu.LinkItem
+      // Base UI leaves link items open by default
       closeOnClick
       {...rest}
       render={
@@ -125,7 +120,7 @@ export function MenuLink({ sub = false, current = false, href, className, childr
       aria-current={current ? "page" : undefined}
       className={(state) =>
         cn(
-          "flex items-center gap-3 py-2.5 pr-5 text-sm leading-5 font-bold tracking-[0.06em] text-foreground uppercase no-underline outline-none",
+          "flex items-center gap-3 py-3 pr-5 text-step--1 leading-none font-bold tracking-[0.06em] text-foreground uppercase no-underline outline-none",
           sub ? "pl-8" : "pl-4",
           styles.link,
           sub && styles.sub,

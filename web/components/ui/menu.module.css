@@ -5,7 +5,6 @@
   /* Popup: Plate's default top-right and bottom-left cuts */
   .popup {
     --plate-fill: var(--color-background);
-    transform-origin: var(--transform-origin);
     transition: opacity .18s ease, translate .26s cubic-bezier(.2,.7,.2,1);
   }
 
@@ -26,15 +25,19 @@
     --plate-fill: transparent;
   }
 
-  /* Links are plates too: the keyline is the focus ring and follows the
-    list's corner cuts on the first and last link */
+  /* Links are plates too: the fill runs edge to edge, and on keyboard focus
+    a 2px keyline becomes the ring, following the list's corner cuts on the
+    first and last link */
   .link {
     --cut-tr: 0px;
     --cut-bl: 0px;
     --plate-keyline: transparent;
-    --plate-keyline-width: 2px;
+    --plate-keyline-width: 0px;
     --plate-fill: transparent;
   }
+  /* Plate paints the keyline under the fill, so while the ring is dark any
+    fade of the fill shows it through the row. Scoped to outrank Plate. */
+  .list .link::before { transition: none; }
   .link:first-child { --cut-tr: var(--menu-cut); }
   .link:last-child { --cut-bl: var(--menu-cut); }
 
@@ -42,7 +45,10 @@
   .link[aria-current] { --plate-fill: var(--color-card); }
 
   .link:focus-visible { --plate-fill: var(--color-card); }
-  .popup[data-input="keyboard"] .link:focus-visible { --plate-keyline: var(--color-foreground); }
+  .popup[data-input="keyboard"] .link:focus-visible {
+    --plate-keyline: var(--color-foreground);
+    --plate-keyline-width: 2px;
+  }
 
   /* Lamp, as on the tabs: dim at rest, lit on highlight, focus and the current page */
   .lamp {
@@ -100,11 +106,7 @@
   @media (forced-colors: active) {
     .popup { transition: none; }
     .link[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
-    .separator { border-top-color: CanvasText; }
     .lamp { background: ButtonText; box-shadow: none; transition: none; }
     .link:is([data-highlighted], :focus-visible, [aria-current]) .lamp { background: Highlight; box-shadow: none; }
-    .link:not(.sub):has(+ .sub)::after,
-    .branch::before,
-    .branch::after { border-color: CanvasText; }
   }
 }
