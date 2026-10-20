@@ -31,11 +31,18 @@
   /* Cells sit on the grid, and run out to the cross on the close button */
   .cells > span {
     translate: var(--gx) var(--gy);
-    transition: translate .32s cubic-bezier(.2,.7,.2,1);
+    scale: var(--gs);
+    transition: translate .32s cubic-bezier(.2,.7,.2,1), scale .32s cubic-bezier(.2,.7,.2,1);
   }
 
-  .cross > span { translate: var(--xx) var(--xy); }
-  .popup:is([data-starting-style], [data-ending-style]) .cross > span { translate: var(--gx) var(--gy); }
+  .cross > span {
+    translate: var(--xx) var(--xy);
+    scale: var(--xs);
+  }
+  .popup:is([data-starting-style], [data-ending-style]) .cross > span {
+    translate: var(--gx) var(--gy);
+    scale: var(--gs);
+  }
 
   .backdrop { transition: opacity .3s; }
   .backdrop:is([data-starting-style], [data-ending-style]) { opacity: 0; }

@@ -115,18 +115,27 @@ function DotsButton(props: ComponentProps<"button">) {
   );
 }
 
-/* 3 × 3 grid → cross with a centre dot. Corners run out to the tips, edges turn
-   a quarter-step clockwise onto the inner diagonals. [grid x, grid y, cross x, cross y] */
+/* 3 × 3 grid → cross with a centre dot, every path radial so no frame has a
+   twist: corners run out to the tips, edges collapse into the centre and
+   shrink away, and four more cells grow out of the centre onto the inner
+   diagonals. [grid x, grid y, cross x, cross y, grid scale, cross scale, delay] */
+const MID = 10.5;
 const CELLS = [
-  [3.5, 3.5, 1.5, 1.5], [10.5, 3.5, 15, 6], [17.5, 3.5, 19.5, 1.5],
-  [3.5, 10.5, 6, 6], [10.5, 10.5, 10.5, 10.5], [17.5, 10.5, 15, 15],
-  [3.5, 17.5, 1.5, 19.5], [10.5, 17.5, 6, 15], [17.5, 17.5, 19.5, 19.5],
-].map(([gx, gy, xx, xy], i) => ({
+  [3.5, 3.5, 1.5, 1.5, 1, 1, 100], [17.5, 3.5, 19.5, 1.5, 1, 1, 100],
+  [3.5, 17.5, 1.5, 19.5, 1, 1, 100], [17.5, 17.5, 19.5, 19.5, 1, 1, 100],
+  [MID, 3.5, MID, MID, 1, 0, 0], [17.5, MID, MID, MID, 1, 0, 0],
+  [MID, 17.5, MID, MID, 1, 0, 0], [3.5, MID, MID, MID, 1, 0, 0],
+  [MID, MID, MID, MID, 1, 1, 0],
+  [MID, MID, 6, 6, 0, 1, 100], [MID, MID, 15, 6, 0, 1, 100],
+  [MID, MID, 6, 15, 0, 1, 100], [MID, MID, 15, 15, 0, 1, 100],
+].map(([gx, gy, xx, xy, gs, xs, delay]) => ({
   "--gx": `${gx}px`,
   "--gy": `${gy}px`,
   "--xx": `${xx}px`,
   "--xy": `${xy}px`,
-  transitionDelay: `${i * 14}ms`,
+  "--gs": gs,
+  "--xs": xs,
+  transitionDelay: `${delay}ms`,
 }) as CSSProperties);
 
 function Dots({ cross = false }: { cross?: boolean }) {
