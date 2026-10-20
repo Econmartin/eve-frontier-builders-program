@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ComponentProps, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { useRef, useState, type ComponentProps, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { Plate } from "./plate";
 import { cn } from "@/lib/cn";
@@ -34,94 +34,47 @@ export type SheetProps = {
 export function Sheet({
   label,
   header,
-  open: openProp,
-  defaultOpen = false,
+  open,
+  defaultOpen,
   onOpenChange,
   initialFocus,
   children,
 }: SheetProps) {
-  const [openState, setOpenState] = useState(defaultOpen);
+  const actions = useRef<Dialog.Root.Actions>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const open = openProp ?? openState;
 
-  // The close button sits exactly over the trigger. As the sheet closes, the
-  // trigger takes on whatever the close button shows, hovered or focused, so
-  // the change happens under the panel and nothing shifts when it's revealed.
-  // The browser marks hover a frame late, and the focus ring's thickness
-  // animates, so otherwise the trigger would catch up after the panel goes.
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [handoff, setHandoff] = useState({ hover: false, focus: false });
+  // The close button fades out over the trigger with its hover or focus look
+  // still on, so the trigger wears the same look until the browser's own
+  // state has taken over, two frames after the panel is gone
+  const [handoff, setHandoff] = useState<string>();
 
-  useEffect(() => {
-    if (!handoff.hover && !handoff.focus) return;
-    // Hover goes when the pointer leaves the trigger's area; while the panel
-    // is closing it's over the close button, so the check is by position
-    const onPointerMove = (event: PointerEvent) => {
-      const box = triggerRef.current?.getBoundingClientRect();
-      const inside =
-        box &&
-        event.clientX >= box.left &&
-        event.clientX <= box.right &&
-        event.clientY >= box.top &&
-        event.clientY <= box.bottom;
-      if (!inside) setHandoff((state) => ({ ...state, hover: false }));
-    };
-    // Focus goes once focus lands anywhere but the trigger
-    const onFocusIn = (event: FocusEvent) => {
-      if (event.target !== triggerRef.current) setHandoff((state) => ({ ...state, focus: false }));
-    };
-    const onBlur = () => setHandoff((state) => ({ ...state, focus: false }));
-    const trigger = triggerRef.current;
-    document.addEventListener("pointermove", onPointerMove);
-    document.addEventListener("focusin", onFocusIn);
-    trigger?.addEventListener("blur", onBlur);
-    return () => {
-      document.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("focusin", onFocusIn);
-      trigger?.removeEventListener("blur", onBlur);
-    };
-  }, [handoff.hover, handoff.focus]);
-
-  // The same going in: opened from the keyboard, the close button mounts
-  // already showing the focus ring rather than growing it once focused
-  const [closeFocus, setCloseFocus] = useState(false);
-
-  useEffect(() => {
-    if (!closeFocus) return;
-    const onFocusIn = (event: FocusEvent) => {
-      if (event.target !== closeRef.current) setCloseFocus(false);
-    };
-    document.addEventListener("focusin", onFocusIn);
-    return () => document.removeEventListener("focusin", onFocusIn);
-  }, [closeFocus]);
-
-  const setOpen = (next: boolean) => {
+  const onChange = (next: boolean) => {
     const close = closeRef.current;
-    if (next) setCloseFocus(Boolean(triggerRef.current?.matches(":focus-visible")));
-    else if (close) {
-      setHandoff({ hover: close.matches(":hover"), focus: close.matches(":focus-visible") });
-      setCloseFocus(false);
+    if (!next && close) {
+      const states = [close.matches(":hover") && "hover", close.matches(":focus-visible") && "focus"];
+      setHandoff(states.filter(Boolean).join(" ") || undefined);
     }
-    setOpenState(next);
     onOpenChange?.(next);
+  };
+
+  const settle = (isOpen: boolean) => {
+    if (!isOpen) requestAnimationFrame(() => requestAnimationFrame(() => setHandoff(undefined)));
   };
 
   // Following a link leaves the sheet's page, so it closes behind it
   const closeOnLink = (event: MouseEvent<HTMLDivElement>) => {
-    if ((event.target as Element).closest("a[href]")) setOpen(false);
+    if ((event.target as Element).closest("a[href]")) actions.current?.close();
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger
-        ref={triggerRef}
-        render={
-          <DotsButton
-            data-handoff={[handoff.hover && "hover", handoff.focus && "focus"].filter(Boolean).join(" ") || undefined}
-          />
-        }
-        aria-label={label}
-      >
+    <Dialog.Root
+      open={open}
+      defaultOpen={defaultOpen}
+      onOpenChange={onChange}
+      onOpenChangeComplete={settle}
+      actionsRef={actions}
+    >
+      <Dialog.Trigger render={<DotsButton data-handoff={handoff} />} aria-label={label}>
         <Dots />
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -131,13 +84,9 @@ export function Sheet({
           initialFocus={initialFocus ?? closeRef}
         >
           <Dialog.Title className="sr-only">{label}</Dialog.Title>
-          <div className="mx-auto flex min-h-(--bar-height,64px) max-w-grid items-center justify-between gap-s bg-background px-s-l">
+          <div className="mx-auto flex min-h-(--bar-height) max-w-grid items-center justify-between gap-s bg-background px-s-l">
             {header}
-            <Dialog.Close
-              ref={closeRef}
-              render={<DotsButton data-handoff={closeFocus ? "focus" : undefined} />}
-              aria-label={`Close ${label.toLowerCase()}`}
-            >
+            <Dialog.Close ref={closeRef} render={<DotsButton />} aria-label={`Close ${label.toLowerCase()}`}>
               <Dots cross />
             </Dialog.Close>
           </div>
@@ -182,8 +131,9 @@ const CELLS = [
 
 function Dots({ cross = false }: { cross?: boolean }) {
   return (
-    <span className={cn("relative size-6", styles.grid, cross && styles.cross)} aria-hidden="true">
+    <span className={cn("relative size-6", styles.cells, cross && styles.cross)} aria-hidden="true">
       {CELLS.map((style, i) => (
+        /* Drawn with a border, which forced colours keep where they would flatten a background */
         <span key={i} className="absolute top-0 left-0 box-border size-[3px] border-[1.5px] border-current" style={style} />
       ))}
     </span>

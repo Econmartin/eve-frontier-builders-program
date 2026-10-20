@@ -126,6 +126,9 @@
   /* interlock seam: between NavItems, and between a NavList and a Field */
   --nav-gap: 7px;
 
+  /* top bar row, which the Sheet's header redraws */
+  --bar-height: 64px;
+
   /* layers */
   --layer-raised: 10;
   --layer-sticky: 100;

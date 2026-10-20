@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 import { Sheet } from "./sheet";
 
-/* The sheet takes any content; the top bar fills it with its search, tabs and links */
 const content = (
   <p className="text-step--1 text-muted">
     Sheet content. The top bar fills this with its search, tabs and links.
@@ -15,13 +14,12 @@ const meta = {
   args: {
     label: "Menu",
     header: <span className="font-heading text-step-2 font-bold">EF-B</span>,
-    defaultOpen: false,
     onOpenChange: fn(),
     children: content,
   },
   argTypes: {
     label: { control: "text" },
-    defaultOpen: { control: "boolean" },
+    defaultOpen: { table: { disable: true } },
     header: { table: { disable: true } },
     children: { table: { disable: true } },
     open: { table: { disable: true } },
@@ -32,7 +30,7 @@ const meta = {
   /* The trigger sits in a bar laid out like the sheet's own header row, as in
     the top bar, so the dots turn into the cross in place */
   render: (args) => (
-    <div className="mx-auto flex min-h-(--bar-height,64px) max-w-grid items-center justify-between gap-s px-s-l">
+    <div className="mx-auto flex min-h-(--bar-height) max-w-grid items-center justify-between gap-s px-s-l">
       {args.header}
       <Sheet {...args} />
     </div>

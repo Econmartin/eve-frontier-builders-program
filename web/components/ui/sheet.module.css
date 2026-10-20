@@ -12,8 +12,8 @@
     --plate-fill: var(--color-background);
   }
 
-  /* Hover is gated so it can't stick after a tap */
-  /* data-handoff carries one button's state onto the other as the sheet opens or closes */
+  /* Hover is gated so it can't stick after a tap. data-handoff is the close
+    button's state, worn by the trigger while the panel fades over it */
   @media (hover: hover) {
     .dots:is(:hover, [data-handoff~="hover"]) { --plate-keyline: var(--color-foreground); }
   }
@@ -24,8 +24,12 @@
     outline: none;
   }
 
+  /* The close button replaces the trigger in place, so the ring must appear
+    at once rather than grow. The element selector outranks Plate's rule. */
+  button.dots::before { transition: none; }
+
   /* Cells sit on the grid, and run out to the cross on the close button */
-  .grid > span {
+  .cells > span {
     translate: var(--gx) var(--gy);
     transition: translate .32s cubic-bezier(.2,.7,.2,1);
   }
@@ -51,18 +55,17 @@
   .popup:is([data-starting-style], [data-ending-style]) .body { grid-template-rows: 0fr; }
 
   @media (prefers-reduced-motion: reduce) {
-    .grid > span,
+    .cells > span,
     .backdrop,
     .popup,
     .body { transition: none; }
   }
 
   @media (forced-colors: active) {
-    .grid > span,
+    .cells > span,
     .backdrop,
     .popup,
     .body { transition: none; }
     .dots:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
-    .body { border-bottom-color: CanvasText; }
   }
 }
