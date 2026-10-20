@@ -1,0 +1,98 @@
+/* Layered so Tailwind utilities (in @layer utilities) can override it.
+  Layout, type and colour are utilities in menu.tsx; this file holds the
+  plate states, the branch lines and the motion. */
+@layer components {
+  .popup {
+    --plate-fill: var(--color-background);
+    transition: opacity .18s ease, translate .26s cubic-bezier(.2,.7,.2,1);
+  }
+
+  .popup[data-starting-style],
+  .popup[data-ending-style] {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+
+  /* The popup's 1px padding puts the list just inside its keyline, so
+    cuts shortened by 1 − (√2 − 1) trace the keyline's inner edge. Links
+    clip to it, so highlights take the corners without covering the line. */
+  .list {
+    --menu-cut: calc(var(--cut-md) - 0.58579px);
+    --cut-tr: var(--menu-cut);
+    --cut-bl: var(--menu-cut);
+    --plate-keyline: transparent;
+    --plate-fill: transparent;
+  }
+
+  /* Links are plates too: the fill runs edge to edge, and keyboard focus
+    draws a 2px keyline that follows the list's cuts on the first and last */
+  .link {
+    --cut-tr: 0px;
+    --cut-bl: 0px;
+    --plate-keyline: transparent;
+    --plate-keyline-width: 0px;
+    --plate-fill: transparent;
+  }
+  .link:first-child { --cut-tr: var(--menu-cut); }
+  .link:last-child { --cut-bl: var(--menu-cut); }
+
+  /* Plate paints the keyline under the fill, so a fading fill would show
+    the ring through the row. Scoped to outrank Plate's own rule. */
+  .list .link::before { transition: none; }
+
+  .link[data-highlighted],
+  .link[aria-current] { --plate-fill: var(--color-card); }
+
+  .popup[data-input="keyboard"] .link:focus-visible {
+    --plate-keyline: var(--color-foreground);
+    --plate-keyline-width: 2px;
+  }
+
+  /* The nav module's lamp, lit on highlight and the current page */
+  .link:is([data-highlighted], [aria-current]) .lamp {
+    background: var(--nav-lamp-lit);
+    box-shadow: var(--nav-lamp-glow);
+  }
+
+  /* Branch from below a parent's lamp to each child's, 2px so it centres on
+    the 4px lamp at 16–20px. Links clip their contents, so the parent draws
+    the stub below its lamp and each child draws on from its own top. */
+  .link:not(.sub):has(+ .sub)::after {
+    content: "";
+    position: absolute;
+    top: calc(50% + 8px);
+    bottom: 0;
+    left: 17px;
+    border-left: 2px solid var(--color-line);
+  }
+
+  .branch {
+    position: absolute;
+    inset-block: 0;
+    left: 17px;
+    width: 11px;
+    pointer-events: none;
+  }
+
+  .branch::before,
+  .branch::after {
+    content: "";
+    position: absolute;
+  }
+
+  /* The line colour is translucent, so the strokes must never overlap: the
+    vertical runs to the foot of the tick, and the tick starts beside it */
+  .branch::before { top: 0; bottom: calc(50% - 1px); left: 0; border-left: 2px solid var(--color-line); }
+  .branch::after { top: calc(50% - 1px); right: 0; left: 2px; border-top: 2px solid var(--color-line); }
+
+  /* The line carries on past a child that has another after it */
+  .sub:has(+ .sub) .branch::before { bottom: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .popup { transition: none; }
+  }
+
+  @media (forced-colors: active) {
+    .link[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
+  }
+}
