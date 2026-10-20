@@ -1,0 +1,68 @@
+/* Layered so Tailwind utilities (in @layer utilities) can override it.
+  Layout, type and colour are utilities in sheet.tsx; this file holds the
+  dots button's plate states and the open and close motion. */
+@layer components {
+  /* The small 12/4 octagon, cut by Plate */
+  .dots {
+    --cut-tl: 12px;
+    --cut-br: 12px;
+    --cut-tr: 4px;
+    --cut-bl: 4px;
+    --plate-keyline: var(--color-control-line);
+    --plate-fill: var(--color-background);
+  }
+
+  /* Hover is gated so it can't stick after a tap */
+  /* data-handoff carries one button's state onto the other as the sheet opens or closes */
+  @media (hover: hover) {
+    .dots:is(:hover, [data-handoff~="hover"]) { --plate-keyline: var(--color-foreground); }
+  }
+
+  .dots:is(:focus-visible, [data-handoff~="focus"]) {
+    --plate-keyline: var(--color-foreground);
+    --plate-keyline-width: 2px;
+    outline: none;
+  }
+
+  /* Cells sit on the grid, and run out to the cross on the close button */
+  .grid > span {
+    translate: var(--gx) var(--gy);
+    transition: translate .32s cubic-bezier(.2,.7,.2,1);
+  }
+
+  .cross > span { translate: var(--xx) var(--xy); }
+  .popup:is([data-starting-style], [data-ending-style]) .cross > span { translate: var(--gx) var(--gy); }
+
+  .backdrop { transition: opacity .3s; }
+  .backdrop:is([data-starting-style], [data-ending-style]) { opacity: 0; }
+
+  /* Closing: the panel holds while the content folds and the cross unwinds,
+    then drops over the bar it matches. Base UI waits on this element's own
+    transitions. */
+  .popup { transition: opacity .1s .34s; }
+  .popup[data-ending-style] { opacity: 0; }
+
+  /* Content drops open below the bar row */
+  .body {
+    grid-template-rows: 1fr;
+    transition: grid-template-rows .3s cubic-bezier(.2,.7,.2,1);
+  }
+
+  .popup:is([data-starting-style], [data-ending-style]) .body { grid-template-rows: 0fr; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grid > span,
+    .backdrop,
+    .popup,
+    .body { transition: none; }
+  }
+
+  @media (forced-colors: active) {
+    .grid > span,
+    .backdrop,
+    .popup,
+    .body { transition: none; }
+    .dots:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+    .body { border-bottom-color: CanvasText; }
+  }
+}
