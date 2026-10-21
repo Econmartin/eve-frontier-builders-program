@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore, type ComponentPropsWithRef } from "react";
+import { useEffect, useRef, useSyncExternalStore, type ComponentProps } from "react";
 import { cn } from "@/lib/cn";
+import { THEME_KEY } from "@/lib/theme";
 import { mountEclipse } from "./eclipse";
 
 type Theme = "light" | "dark";
@@ -25,7 +26,7 @@ function subscribe(onChange: () => void) {
   };
 }
 
-export type ThemeToggleProps = Omit<ComponentPropsWithRef<"button">, "onClick" | "ref" | "children">;
+export type ThemeToggleProps = Omit<ComponentProps<"button">, "onClick" | "ref" | "children">;
 
 /**
  * Switches between light and dark themes and remembers the choice.
@@ -69,7 +70,7 @@ export function ThemeToggle({ className, ...rest }: ThemeToggleProps) {
   const toggle = () => {
     document.documentElement.dataset.theme = next;
     try {
-      localStorage.setItem("theme", next);
+      localStorage.setItem(THEME_KEY, next);
     } catch {}
   };
 
@@ -79,7 +80,7 @@ export function ThemeToggle({ className, ...rest }: ThemeToggleProps) {
       type="button"
       {...rest}
       className={cn(
-        "grid size-10 flex-none cursor-pointer place-items-center text-foreground",
+        "grid size-11 flex-none cursor-pointer place-items-center text-foreground",
         "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-foreground",
         className,
       )}

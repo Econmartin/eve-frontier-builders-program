@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { disketMono, inter } from "./fonts";
+import { THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
-
-/* Applies a saved theme before first paint; with none saved, the system preference applies */
-const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
 export const metadata: Metadata = {
   title: "EVE Frontier Builders",

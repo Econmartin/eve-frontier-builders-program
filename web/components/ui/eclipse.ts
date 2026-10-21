@@ -9,6 +9,7 @@ const sstep = (e0: number, e1: number, x: number) => {
 
 type RGB = [number, number, number];
 
+/* Reads hex and rgb(); an oklch() or color() token would come out as zeros */
 function parseColor(value: string): RGB {
   if (value.startsWith("#")) {
     const hex = value.length === 4 ? [...value.slice(1)].map((c) => c + c).join("") : value.slice(1);
@@ -53,7 +54,7 @@ export function mountEclipse(canvas: HTMLCanvasElement, host: HTMLElement) {
   let to = 0;
   let at = 0;
   let raf = 0;
-  let last = 0;
+  let timer = 0;
   let buf: Buffers | null = null;
 
   /* One envelope drives the hover: glow radius, its alpha and the grain's churn all read off `lit` */
@@ -173,18 +174,10 @@ export function mountEclipse(canvas: HTMLCanvasElement, host: HTMLElement) {
   }
 
   function frame(now: number) {
+    raf = 0;
     const moving = t !== to;
     const fading = lit !== litTo;
-    if (!moving && !fading && (litTo === 0 || reduced.matches)) {
-      raf = 0;
-      return;
-    }
-    /* A ramp wants every frame; a held hover only wants the churn rate */
-    if (!moving && !fading && now - last < 90) {
-      raf = requestAnimationFrame(frame);
-      return;
-    }
-    last = now;
+    if (!moving && !fading && (litTo === 0 || reduced.matches)) return;
     if (moving) {
       const k = Math.min(1, (now - at) / SLIDE_MS);
       t = k === 1 ? to : mix(from, to, k);
@@ -194,10 +187,14 @@ export function mountEclipse(canvas: HTMLCanvasElement, host: HTMLElement) {
       lit = k === 1 ? litTo : mix(litFrom, litTo, k);
     }
     paint(now);
-    raf = requestAnimationFrame(frame);
+    /* A ramp wants every frame; a held hover only wants the churn rate */
+    if (moving || fading) raf = requestAnimationFrame(frame);
+    else timer = window.setTimeout(wake, 90);
   }
 
   const wake = () => {
+    clearTimeout(timer);
+    timer = 0;
     if (!raf) raf = requestAnimationFrame(frame);
   };
 
@@ -240,6 +237,7 @@ export function mountEclipse(canvas: HTMLCanvasElement, host: HTMLElement) {
     },
     destroy() {
       cancelAnimationFrame(raf);
+      clearTimeout(timer);
       host.removeEventListener("pointerenter", onEnter);
       host.removeEventListener("pointerleave", onLeave);
       host.removeEventListener("focusin", onFocusIn);
