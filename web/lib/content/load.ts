@@ -66,7 +66,6 @@ function navItems(list: List): NavItem[] {
     return [{
       title: textOf(link),
       file: link.url,
-      href: routeOf(link.url) ?? "",
       children: rest.flatMap((child) => (child.type === "list" ? navItems(child) : [])),
     }];
   });
@@ -76,6 +75,96 @@ const flatten = (items: NavItem[]): NavItem[] => items.flatMap((item) => [item, 
 
 /** Every page in the GitBook space. */
 const spacePages = () => getNav().flatMap((group) => flatten(group.items));
+
+/* ---------- the glossary: every term on one page, articles beside it ---------- */
+
+/** The topics a term can belong to, as glossary.md spells them. */
+export const topics = ["Game & economy", "Sui & Move", "Smart Assemblies", "Wallet & identity", "dApps & tools"] as const;
+
+export interface Term {
+  slug: string;
+  title: string;
+  letter: string;
+  topics: string[];
+  aliases: string[];
+  /** False when the entry says `no highlight`. */
+  highlight: boolean;
+  definition: string;
+  /** The term's concept article, when it has one. */
+  article?: string;
+  /** The article, or the term's row in the index. */
+  href: string;
+}
+
+/** GitBook's heading slug: lowercase, spaces to hyphens, punctuation dropped. */
+const slugify = (heading: string) =>
+  heading.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").trim().replace(/\s+/g, "-");
+
+let glossary: { at: number; terms: Term[] } | undefined;
+
+/**
+ * Every term in glossary.md, read as strictly as the authoring guide sets
+ * out: `### Term`, an italic line of topics (plus `also:` aliases and
+ * `no highlight`), the definition, and an optional article link.
+ */
+export function getGlossary(): Term[] {
+  if (glossary && fresh(glossary.at)) return glossary.terms;
+  const file = "glossary.md";
+  const { root } = parseMarkdown(read(file), file);
+  const terms: Term[] = [];
+  let letter = "";
+
+  root.children.forEach((node, i) => {
+    if (node.type === "heading" && node.depth === 2) letter = textOf(node).trim();
+    if (node.type !== "heading" || node.depth !== 3) return;
+    const title = textOf(node).trim();
+    const where = `${file}: "${title}"`;
+    const [line, definition, more] = root.children.slice(i + 1, i + 4);
+
+    const emphasis = line?.type === "paragraph" && line.children.length === 1 && line.children[0].type === "emphasis" ? line.children[0] : undefined;
+    if (!emphasis) throw new Error(`${where} needs an italic topics line under its heading`);
+    const [topicPart, ...flags] = textOf(emphasis).split(" · ").map((part) => part.trim());
+    const termTopics = topicPart.split(",").map((t) => t.trim());
+    for (const topic of termTopics) {
+      if (!topics.includes(topic as never)) throw new Error(`${where}: "${topic}" isn't one of ${topics.join(", ")}`);
+    }
+    const also = flags.find((flag) => flag.startsWith("also:"));
+
+    if (definition?.type !== "paragraph" || /^Read the article/.test(textOf(definition))) throw new Error(`${where} needs a definition`);
+    const link = more?.type === "paragraph" ? more.children.find((child) => child.type === "link") : undefined;
+    const article = link && /^Read the article/.test(textOf(link)) ? posix.normalize(link.url) : undefined;
+    if (article && !spacePages().some((item) => item.file === article)) throw new Error(`${where}: article ${article} isn't in SUMMARY.md`);
+
+    const slug = slugify(title);
+    if (terms.some((t) => t.slug === slug)) throw new Error(`${where}: another term already has the slug "${slug}"`);
+    terms.push({
+      slug,
+      title,
+      letter,
+      topics: termTopics,
+      aliases: also ? also.slice(5).split(",").map((a) => a.trim()).filter(Boolean) : [],
+      highlight: !flags.includes("no highlight"),
+      definition: textOf(definition).trim(),
+      article,
+      href: article ? `/glossary/${slug}` : `/glossary#${slug}`,
+    });
+  });
+
+  glossary = { at: Date.now(), terms };
+  return terms;
+}
+
+/** A term by slug, or a build error naming where it was asked for. */
+function termOf(slug: string, from: string) {
+  const term = getGlossary().find((t) => t.slug === slug);
+  if (!term) throw new Error(`${from}: no glossary term "${slug}" in glossary.md`);
+  return term;
+}
+
+/** The terms with articles, A to Z, for the articles' previous and next links. */
+export function getArticles() {
+  return getGlossary().filter((t) => t.article).sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
+}
 
 /* ---------- the curriculum: courses list modules, modules list lessons ---------- */
 
@@ -226,7 +315,8 @@ export function getPathways(): Pathway[] {
  * appears. Library sections and the space's own guide have none.
  */
 export function routeOf(file: string): string | undefined {
-  if (file.startsWith("glossary/")) return `/${file.replace(/(^|\/)README\.md$/, "").replace(/\.md$/, "")}`;
+  if (file === "glossary.md") return "/glossary";
+  if (file.startsWith("concepts/")) return getGlossary().find((t) => t.article === file)?.href;
   if (file.startsWith("lessons/")) {
     for (const course of getCourses()) {
       for (const part of course.modules) {
@@ -305,9 +395,8 @@ function expand(children: RootContent[], file: string, seen: Set<string>): RootC
     if (node.type === "code" && node.lang === "excerpt") return [excerpt(node.value, file)];
     if (node.type === "code" && node.lang === "glossary") {
       const { term } = parseYaml(node.value) ?? {};
-      const target = `glossary/${term}.md`;
-      const header = termHeader(target, file);
-      return [{ type: "glossaryCard", title: header.title, description: header.description, href: routeOf(target)! } satisfies GlossaryCard];
+      const found = termOf(String(term), file);
+      return [{ type: "glossaryCard", slug: found.slug, title: found.title, description: found.definition, href: found.href } satisfies GlossaryCard];
     }
     if (node.type === "code" && node.lang === "exercise") {
       const { id, ...config } = parseYaml(node.value) ?? {};
@@ -327,13 +416,6 @@ function include(target: string, from: string, seen: Set<string>): RootContent[]
   dropTitle(root);
   resolve(root, target);
   return root.children;
-}
-
-function termHeader(target: string, from: string) {
-  if (!spacePages().some((item) => item.file === target)) throw new Error(`${from}: no glossary term ${target}`);
-  const header = headerOf(target);
-  if (!header.description) throw new Error(`${target}: glossary terms need a description`);
-  return header as typeof header & { description: string };
 }
 
 let manifest: Record<string, VendorSource> | undefined;
@@ -376,10 +458,10 @@ function excerpt(value: string, file: string): Excerpt {
 /**
  * Rewrites links as site addresses, marks glossary links for previews, and
  * rejects broken ones. Curriculum text uses `glossary:name` and `lesson:name`;
- * GitBook pages link to glossary pages by relative path.
+ * GitBook pages link to `glossary.md#name` and to articles by relative path.
  */
 function resolve(root: Root, file: string) {
-  const curriculum = !/^(glossary|library)\//.test(file);
+  const curriculum = !/^(library|concepts)\/|^glossary\.md$/.test(file);
 
   visit(root, (node) => {
     if (node.type === "paragraph" && tagOf(node)) {
@@ -387,28 +469,28 @@ function resolve(root: Root, file: string) {
     }
     if (node.type !== "link") return;
     const [path, hash] = node.url.split("#");
-    const suffix = hash ? `#${hash}` : "";
 
-    let target: string;
+    let term: Term | undefined;
     if (/^glossary:/.test(path)) {
-      target = `glossary/${path.slice(9)}.md`;
+      term = termOf(path.slice(9), file);
     } else if (/^lesson:/.test(path)) {
-      target = `lessons/${path.slice(7)}.md`;
-      const href = routeOf(target);
+      const href = routeOf(`lessons/${path.slice(7)}.md`);
       if (!href) throw new Error(`${file}: link to lesson "${path.slice(7)}", which isn't in any course`);
-      node.url = href + suffix;
+      node.url = href + (hash ? `#${hash}` : "");
       return;
     } else if (/^[a-z]+:|^#|^\//.test(node.url)) {
       return;
     } else if (curriculum) {
       throw new Error(`${file}: link to "${node.url}"; use glossary:name or lesson:name`);
     } else {
-      target = posix.normalize(posix.join(posix.dirname(file), decodeURI(path)));
-      if (!target.startsWith("glossary/")) throw new Error(`${file}: link to ${target}; GitBook pages can only link to the glossary`);
+      const target = posix.normalize(posix.join(posix.dirname(file), decodeURI(path)));
+      if (target === "glossary.md" && hash) term = termOf(hash, file);
+      else if (target.startsWith("concepts/")) term = getGlossary().find((t) => t.article === target);
+      if (!term) throw new Error(`${file}: link to ${node.url}; GitBook pages can only link to glossary terms and articles`);
     }
 
-    node.url = routeOf(target)! + suffix;
-    if (!target.endsWith("README.md")) node.data = { ...node.data, term: termHeader(target, file).description };
+    node.url = term.href;
+    node.data = { ...node.data, term: term.definition, termSlug: term.slug };
   });
 }
 
@@ -419,37 +501,12 @@ function visit(node: Nodes, fn: (node: Nodes) => void) {
 
 /* ---------- derived lists ---------- */
 
-export interface GlossaryTerm {
-  file: string;
-  title: string;
-  href: string;
-  description: string;
-  aliases: string[];
-}
-
-/** Every term in the GitBook space's glossary, A to Z. */
-export function getGlossary(): GlossaryTerm[] {
-  return spacePages()
-    .filter((item) => item.file.startsWith("glossary/") && !item.file.endsWith("README.md"))
-    .map((item) => {
-      const page = getPage(item.file);
-      return { file: item.file, title: page.title, href: item.href, description: page.description ?? "", aliases: page.aliases ?? [] };
-    })
-    .sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
-}
-
 /** The lessons that link to or drop in a glossary term, each at its first address. */
-export function getBacklinks(file: string) {
-  const href = routeOf(file);
+export function getBacklinks(slug: string) {
   const lessons = new Map(getCourses().flatMap((c) => c.modules.flatMap((m) => m.lessons)).map((l) => [l.file, l]));
-  return [...lessons.values()].filter((lesson) => {
-    let found = false;
-    visit(getPage(lesson.file).root, (node) => {
-      const url = node.type === "link" ? node.url : node.type === "glossaryCard" ? node.href : undefined;
-      if (url?.split("#")[0] === href) found = true;
-    });
-    return found;
-  }).map((lesson) => ({ ...lesson, href: routeOf(lesson.file)! }));
+  return [...lessons.values()]
+    .filter((lesson) => getTerms(getPage(lesson.file).root).some((t) => t.slug === slug))
+    .map((lesson) => ({ ...lesson, href: routeOf(lesson.file)! }));
 }
 
 /** The page's second-level headings, for an "On this page" list. */
@@ -476,17 +533,12 @@ export function getResources(root: Root) {
   return resources;
 }
 
-/** Glossary terms a lesson links to or drops in, in the order they first appear. */
-export function getTerms(root: Root) {
-  const terms = new Map<string, { title: string; href: string; description: string }>();
+/** Glossary terms a page links to or drops in, in the order they first appear. */
+export function getTerms(root: Root): Term[] {
+  const slugs = new Set<string>();
   visit(root, (node) => {
-    if (node.type === "glossaryCard" && !terms.has(node.href)) {
-      terms.set(node.href, { title: node.title, href: node.href, description: node.description });
-    }
-    if (node.type === "link" && node.data?.term && !terms.has(node.url)) {
-      const file = spacePages().find((item) => item.href === node.url)?.file;
-      terms.set(node.url, { title: file ? headerOf(file).title : textOf(node), href: node.url, description: node.data.term });
-    }
+    if (node.type === "glossaryCard") slugs.add(node.slug);
+    if (node.type === "link" && node.data?.termSlug) slugs.add(node.data.termSlug);
   });
-  return [...terms.values()];
+  return [...slugs].map((slug) => termOf(slug, "getTerms"));
 }

@@ -8,19 +8,43 @@ Pages here are Markdown. Edit them in GitBook or in the repository; Git Sync kee
 
 ## Where things go
 
-| Folder | What it holds | How lessons use it |
+| File | What it holds | How lessons use it |
 | --- | --- | --- |
-| `glossary/` | One page per term. The page description is the one-line definition. | Inline term links, and definition cards |
-| `library/pillar-N/` | Short sections, filed by pillar, that more than one lesson needs. | Dropped in whole |
+| `glossary.md` | Every term, A to Z, on one page. | Term links with a preview, and definition cards |
+| `concepts/{slug}.md` | One article per term that needs more than a definition. | The term's own page on the site |
+| `library/pillar-N/` | Short sections, filed by pillar, that more than one lesson needs. Any folders below work. | Dropped in whole |
 
-Give every page a description in GitBook's page settings. For a glossary term it's the definition shown on hover.
+## The glossary entry
 
-## Linking a glossary term
-
-Link the term to its page, the same way you link any other page.
+The site reads `glossary.md` strictly. Each entry is exactly this, under its letter group (`## A` to `## Z`, or `## #` for terms that start with a symbol):
 
 ```markdown
-A [Smart Assembly](../../glossary/smart-assembly.md) is a structure players can extend.
+### Smart Assembly
+
+*Smart Assemblies, Sui & Move · also: assembly*
+
+An in-game structure that lives onchain as an object. Anyone can read it, and its owner can extend it.
+
+[Read the article →](concepts/smart-assembly.md)
+```
+
+- **Heading:** the term, written as it should appear. Its slug is GitBook's heading slug: lowercase, spaces become hyphens, punctuation is dropped. Renaming a term changes its slug and breaks links to it.
+- **Topics line,** in italics. One or more of `Game & economy`, `Sui & Move`, `Smart Assemblies`, `Wallet & identity` and `dApps & tools`, spelled exactly, main topic first. Each shows as a tag and filters the index.
+- **Aliases** go on the same line after ` · also: `, separated by commas: other names, not plurals.
+- **`no highlight`** on the same line keeps the term in the glossary but out of automatic highlighting, for words the site uses all the time: `*Game & economy · no highlight*`.
+- **Definition:** one to three short sentences, plain text.
+- **Article link:** optional and always last, exactly `[Read the article →](concepts/<slug>.md)`.
+
+The site build fails on an unknown topic, a missing definition, a duplicate slug or an article that isn't in `SUMMARY.md`.
+
+## Writing an article
+
+An article is for a term that needs real explanation. Give it a description and a `# Title`, then three to five short `##` sections. Link to terms with `../glossary.md#slug` and to other articles with `slug.md`; the terms you link become the article's related terms. The site adds where the term is taught, so don't write that section yourself.
+
+## Linking a term from a library section
+
+```markdown
+Code you deploy eventually runs on [Stillness](../../glossary.md#stillness).
 ```
 
 ## Hints

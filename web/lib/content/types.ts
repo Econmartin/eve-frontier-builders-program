@@ -22,6 +22,7 @@ export interface Excerpt extends Parent {
 /** A glossary term's definition, dropped into a lesson. */
 export interface GlossaryCard extends Node {
   type: "glossaryCard";
+  slug: string;
   title: string;
   href: string;
   description: string;
@@ -52,14 +53,15 @@ declare module "mdast" {
     id?: string;
   }
   interface LinkData {
-    /** The linked glossary term's description, shown as a preview. */
+    /** The linked glossary term's definition, shown as a preview. */
     term?: string;
+    /** The linked glossary term's slug. */
+    termSlug?: string;
   }
 }
 
 export interface NavItem {
   title: string;
-  href: string;
   file: string;
   children: NavItem[];
 }

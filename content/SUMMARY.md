@@ -5,10 +5,11 @@
 
 ## Glossary
 
-* [Glossary](glossary/README.md)
-  * [Move](glossary/move.md)
-  * [Smart Assembly](glossary/smart-assembly.md)
-  * [Stillness](glossary/stillness.md)
+* [Glossary](glossary.md)
+
+## Concepts
+
+* [Smart Assembly](concepts/smart-assembly.md)
 
 ## Content library
 

@@ -50,11 +50,11 @@ export function Portal({ course: courseSlug, module: moduleSlug, lesson: lessonS
               <h2 className={idx}>Terms in this lesson</h2>
               <dl className="mt-xs grid gap-xs">
                 {terms.map((term) => (
-                  <div key={term.href} className="border border-line bg-background px-xs py-2xs">
+                  <div key={term.slug} className="border border-line bg-background px-xs py-2xs">
                     <dt>
                       <Link href={term.href} className="font-bold text-accent-text underline underline-offset-2">{term.title}</Link>
                     </dt>
-                    <dd className="mt-3xs text-step--2 text-muted">{term.description}</dd>
+                    <dd className="mt-3xs text-step--2 text-muted">{term.definition}</dd>
                   </div>
                 ))}
               </dl>

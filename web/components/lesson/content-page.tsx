@@ -1,18 +1,16 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/cn";
 import type { Root } from "mdast";
-import { getBacklinks, getGlossary, getOutline } from "@/lib/content/load";
-import { GlossaryIndex } from "./glossary-index";
+import { getOutline } from "@/lib/content/load";
 import { Markdown } from "./markdown";
 import { SiteHeader, type Section } from "./site-header";
 
 export const eyebrow = "font-heading text-step--2 font-bold tracking-[0.08em] text-muted uppercase";
 
 export interface ContentPageProps {
-  page: { title: string; description?: string; aliases?: string[]; root: Root };
-  /** The GitBook file behind the page, when there is one, for glossary extras. */
-  file?: string;
+  page: { title: string; description?: string; root: Root };
+  /** Shown under the description, such as a term's topics. */
+  meta?: ReactNode;
   parent?: { title: string; href: string };
   section?: Section;
   children?: ReactNode;
@@ -20,12 +18,11 @@ export interface ContentPageProps {
 
 /**
  * A page outside the lesson player: the Courses and Pathways pages, a
- * pathway, and the glossary and its terms. The page's own text comes first;
+ * pathway, and the glossary and its articles. The page's own text comes first;
  * `children` adds what's generated for it, such as course cards.
  */
-export function ContentPage({ page, file, parent, section, children }: ContentPageProps) {
+export function ContentPage({ page, meta, parent, section, children }: ContentPageProps) {
   const outline = getOutline(page.root);
-  const isTerm = file?.startsWith("glossary/") && file !== "glossary/README.md";
 
   return (
     <>
@@ -39,7 +36,7 @@ export function ContentPage({ page, file, parent, section, children }: ContentPa
           )}
           <h1 className="mt-xs text-step-4">{page.title}</h1>
           {page.description && <p className="mt-s text-step-1 text-muted">{page.description}</p>}
-          {page.aliases?.length ? <p className="mt-xs text-step--1 text-muted">Also called {page.aliases.join(", ")}</p> : null}
+          {meta}
 
           {page.root.children.length > 0 && (
             <div className="mt-l border-t border-line pt-l">
@@ -47,10 +44,6 @@ export function ContentPage({ page, file, parent, section, children }: ContentPa
             </div>
           )}
 
-          {file === "glossary/README.md" && (
-            <GlossaryIndex terms={getGlossary().map(({ title, href, description, aliases }) => ({ title, href, description, aliases }))} />
-          )}
-          {isTerm && <UsedIn file={file!} />}
           {children}
         </main>
 
@@ -71,30 +64,5 @@ export function ContentPage({ page, file, parent, section, children }: ContentPa
         )}
       </div>
     </>
-  );
-}
-
-/** The lessons that link to a glossary term. */
-function UsedIn({ file }: { file: string }) {
-  const pages = getBacklinks(file);
-  if (!pages.length) return null;
-  return (
-    <section aria-labelledby="used-in" className="mt-xl">
-      <p aria-hidden="true" className={cn(eyebrow, "flex items-center gap-xs")}>
-        Where it&rsquo;s taught
-        <span className="h-px grow bg-line" />
-      </p>
-      <h2 id="used-in" className="sr-only">Where it&rsquo;s taught</h2>
-      <ul role="list" className="mt-xs">
-        {pages.map((item) => (
-          <li key={item.file} className="border-b border-line">
-            <Link href={item.href} className="flex items-center justify-between gap-s py-xs hover:text-accent-text">
-              <span className="font-bold">{item.title}</span>
-              <span aria-hidden="true" className="text-muted">→</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
