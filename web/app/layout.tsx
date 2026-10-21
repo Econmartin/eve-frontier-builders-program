@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { disketMono, inter } from "./fonts";
 import "./globals.css";
 
+/* Applies a saved theme before first paint; with none saved, the system preference applies */
+const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+
 export const metadata: Metadata = {
   title: "EVE Frontier Builders",
   description: "A learning and enablement hub for EVE Frontier builders.",
@@ -12,7 +15,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${disketMono.variable} ${inter.variable} h-full antialiased`}
+      // The theme script sets data-theme before React hydrates
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
