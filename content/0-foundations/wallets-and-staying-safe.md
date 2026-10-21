@@ -1,4 +1,5 @@
 ---
+duration: 7 min
 description: How your EVE Frontier wallet works, and the habits that keep it safe.
 ---
 

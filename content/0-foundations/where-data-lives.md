@@ -1,4 +1,5 @@
 ---
+duration: 9 min
 description: The places EVE Frontier data lives, and which one to reach for.
 ---
 

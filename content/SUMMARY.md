@@ -47,12 +47,16 @@
 ## Reference
 
 * [Glossary](glossary/README.md)
+  * [Agentic development](glossary/agentic-development.md)
   * [EVE Token](glossary/eve-token.md)
   * [EVE Vault](glossary/eve-vault.md)
   * [GraphQL](glossary/graphql.md)
   * [Indexer](glossary/indexer.md)
+  * [Low code](glossary/low-code.md)
   * [LUX](glossary/lux.md)
+  * [MCP](glossary/mcp.md)
   * [Move](glossary/move.md)
+  * [OwnerCap](glossary/owner-cap.md)
   * [Smart Assembly](glossary/smart-assembly.md)
   * [Stillness](glossary/stillness.md)
   * [Sui](glossary/sui.md)

@@ -4,7 +4,12 @@ description: Using AI-assisted and low-code workflows to learn, prototype and it
 
 # Pillar 1 — Agentic coding and low code
 
-It covers prompt-driven and agent-assisted development, low-code tools such as Frontier Flow, and how to validate what those tools produce.
+You don't have to write every line yourself to build in EVE Frontier. This pillar covers two ways in that lower the barrier:
+
+- **[Agentic development](../glossary/agentic-development.md)**: AI coding tools that read, write, run and fix code alongside you.
+- **[Low code](../glossary/low-code.md)**: visual and configuration-driven tools that generate code from choices you make.
+
+Neither replaces understanding how the Frontier works. Both get you to a working prototype sooner, and the last module shows how to check what they produce before it goes anywhere near the live game.
 
 ## Modules
 
