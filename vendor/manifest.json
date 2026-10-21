@@ -5,15 +5,7 @@
       "branch": "main",
       "commit": "4a2edd51ad57521b3a97305ab665c59f343fdc23",
       "files": {
-        "eve-vault/introduction-to-eve-vault.md": "3d57bca2f2ec832151ad07f0f863d37ac546e58035ea6185391d4a66182cacad",
-        "eve-vault/wallets-and-identity.md": "12bef6c19d78872b0c7262de4c2d44dbae1ac817a59e7aeb4c1cd98d762e38c2",
-        "quickstart/environment-setup.md": "621a21e0ddd72670d09504d20105250c4b7f73f380624be3e39788cf618cc622",
-        "smart-assemblies/introduction.md": "08adc4684a2281918fab3154d27c2f6903dd24954530fb1c1e20a8ec8174e55d",
-        "smart-assemblies/storage-unit/README.md": "2a59a27d35e340d6c2dae94f2b97090a3cd62d3905ced9042c676b85708ee6b7",
-        "smart-contracts/eve-frontier-world-explainer.md": "5e7d599c4ecdcce43b727731a1eceb991bb099672d500c72cb19a852e30bbed2",
-        "smart-contracts/move-patterns-in-frontier.md": "42d035d8835bed77319d885300b70978ae8bfb375b370932afcc753069c01c40",
-        "tools/interfacing-with-the-eve-frontier-world.md": "e6b5f7a4eeb7f13fa03b22c2ae739ad2510052055de2e2b67e993d92bd88017c",
-        "tools/resources.md": "c8c76ad1512c803235e0771fb110c8e801bfb5eee07ccc4ee6d79166826c7c21"
+        "smart-assemblies/storage-unit/README.md": "2a59a27d35e340d6c2dae94f2b97090a3cd62d3905ced9042c676b85708ee6b7"
       }
     }
   }

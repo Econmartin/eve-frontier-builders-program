@@ -1,15 +1,12 @@
 ---
-description: Lessons for building on EVE Frontier, from first steps to your own Smart Assembly.
+description: The glossary and reusable content the Builder Program's lessons are built from.
 ---
 
-# EVE Frontier Builder Program
+# Builder Program content
 
-These lessons take you from understanding the Frontier to building in it. They're arranged in five pillars, and each one builds on the last.
+This space holds the material lessons draw on:
 
-- [Pillar 0 — Frontier builder foundations](0-foundations/README.md)
-- [Pillar 1 — Agentic coding and low code](1-agentic-and-low-code/README.md)
-- [Pillar 2 — Frontier systems and world interaction](2-frontier-systems/README.md)
-- [Pillar 3 — Move and Sui](3-move-and-sui/README.md)
-- [Pillar 4 — Move and Sui in EVE Frontier](4-move-in-frontier/README.md)
+- the [glossary](glossary/README.md), one page per term;
+- the [content library](library/README.md), short sections filed by pillar.
 
-New to a term? The [glossary](glossary/README.md) defines the words the lessons use.
+Lessons, modules, courses and pathways aren't written here. They live in the repository's `curriculum/` folder and pull in pages from this space. [Writing for this space](authoring.md) covers the formatting both use.

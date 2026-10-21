@@ -1,31 +1,26 @@
 ---
-description: How to write and edit lessons, in GitBook or in Git.
+description: How to write glossary terms and library sections, in GitBook or in Git.
 ---
 
-# Writing lessons
+# Writing for this space
 
-Lessons are Markdown files in this space. Edit them in GitBook or in the repository; Git Sync keeps both in step. The builder portal builds its lesson pages from the same files.
+Pages here are Markdown. Edit them in GitBook or in the repository; Git Sync keeps both in step. Lessons on the site pull these pages in, so a change here shows up in every lesson that uses the page.
 
 ## Where things go
 
-| Folder | What it holds |
-| --- | --- |
-| `0-foundations/` to `4-move-in-frontier/` | One folder per pillar. The pillar's `README.md` is its overview page and every other file is a module. |
-| `glossary/` | One page per term. |
-| `SUMMARY.md` | The sidebar. GitBook updates it when you add or move a page. |
+| Folder | What it holds | How lessons use it |
+| --- | --- | --- |
+| `glossary/` | One page per term. The page description is the one-line definition. | Inline term links, and definition cards |
+| `library/pillar-N/` | Short sections, filed by pillar, that more than one lesson needs. | Dropped in whole |
 
-To start a module that isn't written yet, open its page and replace the "isn't written yet" hint.
-
-## Every page
-
-Give each page a description in GitBook's page settings. It appears under the title, in search results and in the portal's lesson lists.
+Give every page a description in GitBook's page settings. For a glossary term it's the definition shown on hover.
 
 ## Linking a glossary term
 
-Link the term to its glossary page, the same way you link any other page. The portal shows the term's description when a reader hovers or focuses the link.
+Link the term to its page, the same way you link any other page.
 
 ```markdown
-A [Smart Assembly](../glossary/smart-assembly.md) is a structure players can extend.
+A [Smart Assembly](../../glossary/smart-assembly.md) is a structure players can extend.
 ```
 
 ## Hints
@@ -33,34 +28,10 @@ A [Smart Assembly](../glossary/smart-assembly.md) is a structure players can ext
 Use GitBook's hint block. The `info`, `success`, `warning` and `danger` styles are supported.
 
 ```markdown
-{% hint style="info" %}
-Nothing in this lesson touches the live game.
+{% hint style="danger" %}
+Never share a recovery phrase.
 {% endhint %}
 ```
-
-## Quoting the EVE Frontier builder docs
-
-Quote a section of the official builder docs instead of copying it. Add a code block with the language `excerpt`, the file, and the heading of the section you want.
-
-````markdown
-```excerpt
-source: builder-documentation
-file: eve-vault/wallets-and-identity.md
-heading: Seamless Onboarding with zkLogin
-```
-````
-
-GitBook shows this as a small code block. The portal replaces it with that section, pinned to the version of the docs recorded in `vendor/manifest.json`. A file has to be in the snapshot before a lesson can quote it, so ask an engineer to add new files.
-
-## Exercises
-
-Interactive exercises are built in the portal. Place one with a code block with the language `exercise` and the exercise's ID.
-
-````markdown
-```exercise
-id: feral-vending
-```
-````
 
 ## Tabs
 
@@ -75,6 +46,20 @@ Steps for Windows.
 {% endtabs %}
 ```
 
+## Quoting the EVE Frontier builder docs
+
+A section can quote the official builder docs instead of copying them:
+
+````markdown
+```excerpt
+source: builder-documentation
+file: eve-vault/wallets-and-identity.md
+heading: Seamless Onboarding with zkLogin
+```
+````
+
+GitBook shows this as a small code block. The site replaces it with that section, pinned to the version recorded in `vendor/manifest.json`. A file has to be in the snapshot first, so ask an engineer to add new ones.
+
 ## What isn't supported
 
-Other GitBook blocks, such as cards, steppers and embeds, don't appear in the portal yet. The portal build fails if a page uses one, so the problem shows up before the lesson goes live.
+Other GitBook blocks, such as cards, steppers and embeds, don't appear on the site yet. The site build fails if a page uses one, so the problem shows up before it goes live.
