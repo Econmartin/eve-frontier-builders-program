@@ -22,6 +22,8 @@ export interface Excerpt extends Parent {
 export interface Exercise extends Node {
   type: "exercise";
   id: string;
+  /** The block's other fields, such as the learner-facing text for each node. */
+  config: Record<string, unknown>;
 }
 
 declare module "mdast" {
@@ -34,6 +36,10 @@ declare module "mdast" {
     gitbook: GitbookBlock;
     excerpt: Excerpt;
     exercise: Exercise;
+  }
+  interface HeadingData {
+    /** The anchor ID, unique within the page. */
+    id?: string;
   }
   interface LinkData {
     /** The linked glossary term's description, shown as a preview. */

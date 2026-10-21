@@ -1,23 +1,13 @@
 import type { ComponentType } from "react";
-import { Plate } from "@/components/ui";
-
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <Plate as="section" aria-label={`Exercise: ${title}`} className="mt-m px-s py-m">
-      <p className="font-heading text-step--2 font-bold tracking-[0.04em] text-muted uppercase">Exercise</p>
-      <p className="mt-2xs text-step-1 font-bold">{title}</p>
-      <p className="mt-2xs text-muted">This exercise isn&rsquo;t built yet.</p>
-    </Plate>
-  );
-}
+import { VendingExercise, type VendingExerciseProps } from "@/exercises/feral-vending/vending-exercise";
 
 /** Exercises a lesson can place with an `exercise` code block, by ID. */
-const exercises: Record<string, ComponentType> = {
-  "feral-vending": () => <ComingSoon title="Feral Data vending machine" />,
+const exercises: Record<string, ComponentType<{ config: Record<string, unknown> }>> = {
+  "feral-vending": ({ config }) => <VendingExercise config={config as VendingExerciseProps["config"]} />,
 };
 
-export function Exercise({ id }: { id: string }) {
+export function Exercise({ id, config }: { id: string; config: Record<string, unknown> }) {
   const Component = exercises[id];
   if (!Component) throw new Error(`No exercise with the ID "${id}"`);
-  return <Component />;
+  return <Component config={config} />;
 }

@@ -9,6 +9,7 @@ import { hintStyles, type GitbookBlock } from "./types";
 export interface Frontmatter {
   description?: string;
   aliases?: string[];
+  duration?: string;
 }
 
 const processor = unified().use(remarkParse).use(remarkGfm).use(remarkFrontmatter);

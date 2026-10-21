@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import type { Nodes, RootContent } from "mdast";
+import type { RootContent } from "mdast";
 import { EXTERNAL, isExternal } from "@/lib/external";
-import { textOf } from "@/lib/content/parse";
 import type { HintStyle } from "@/lib/content/types";
+import { CodeBlock } from "./code-block";
 import { Excerpt } from "./excerpt";
 import { Exercise } from "./exercise";
 import { Hint } from "./hint";
@@ -14,14 +14,10 @@ const link = "text-accent-text underline underline-offset-2 hover:decoration-2";
 
 /** Renders a page's resolved Markdown tree with the site's components. */
 export function Markdown({ nodes }: { nodes: RootContent[] }) {
-  const ids = new Map<string, number>();
-
-  function idFor(node: Nodes) {
-    const base = textOf(node).toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
-    const count = ids.get(base) ?? 0;
-    ids.set(base, count + 1);
-    return count ? `${base}-${count}` : base;
-  }
+  // Top-level sections get a number, as in "01 / Title"; headings inside blocks don't
+  const sections = new Map(
+    nodes.filter((node) => node.type === "heading" && node.depth === 2).map((node, i) => [node, i + 1]),
+  );
 
   function all(children: RootContent[]) {
     return children.map((child, i) => render(child, i));
@@ -32,8 +28,20 @@ export function Markdown({ nodes }: { nodes: RootContent[] }) {
       case "paragraph":
         return <p key={key} className="mt-s first:mt-0">{all(node.children)}</p>;
       case "heading": {
-        const Heading = `h${Math.min(Math.max(node.depth, 2), 6)}` as "h2";
-        return <Heading key={key} id={idFor(node)} className="mt-l scroll-mt-l first:mt-0">{all(node.children)}</Heading>;
+        const section = sections.get(node);
+        if (section) {
+          return (
+            <div key={key} className="mt-xl first:mt-0">
+              <p aria-hidden="true" className="flex items-center gap-xs font-heading text-step--2 tracking-[0.08em] text-muted">
+                {String(section).padStart(2, "0")}
+                <span className="h-px grow bg-line" />
+              </p>
+              <h2 id={node.data?.id} className="mt-2xs scroll-mt-l text-step-3">{all(node.children)}</h2>
+            </div>
+          );
+        }
+        const Heading = `h${Math.min(Math.max(node.depth, 2), 6)}` as "h3";
+        return <Heading key={key} id={node.data?.id} className="mt-l scroll-mt-l first:mt-0">{all(node.children)}</Heading>;
       }
       case "text":
         return node.value;
@@ -62,7 +70,7 @@ export function Markdown({ nodes }: { nodes: RootContent[] }) {
       case "list": {
         const List = node.ordered ? "ol" : "ul";
         return (
-          <List key={key} className={`mt-s pl-m ${node.ordered ? "list-decimal" : "list-disc"}`}>
+          <List key={key} start={node.ordered && node.start !== 1 ? (node.start ?? undefined) : undefined} className={`mt-s pl-m ${node.ordered ? "list-decimal" : "list-disc"}`}>
             {all(node.children)}
           </List>
         );
@@ -72,11 +80,7 @@ export function Markdown({ nodes }: { nodes: RootContent[] }) {
       case "blockquote":
         return <blockquote key={key} className="mt-s border-l-2 border-line pl-s">{all(node.children)}</blockquote>;
       case "code":
-        return (
-          <pre key={key} tabIndex={0} className="mt-s overflow-x-auto bg-card p-s font-mono text-step--1 leading-normal">
-            <code>{node.value}</code>
-          </pre>
-        );
+        return <CodeBlock key={key} lang={node.lang} code={node.value} />;
       case "thematicBreak":
         return <hr key={key} className="mt-l border-line" />;
       case "table": {
@@ -115,7 +119,7 @@ export function Markdown({ nodes }: { nodes: RootContent[] }) {
       case "excerpt":
         return <Excerpt key={key} title={node.title} href={node.href}>{all(node.children)}</Excerpt>;
       case "exercise":
-        return <Exercise key={key} id={node.id} />;
+        return <Exercise key={key} id={node.id} config={node.config} />;
       default:
         // Raw HTML and other GitBook-only nodes don't render in the portal
         return null;

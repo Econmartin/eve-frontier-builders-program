@@ -16,6 +16,7 @@ interface Page {
   title: string;
   description?: string;
   aliases?: string[];
+  duration?: string;
   root: Root;
 }
 
@@ -88,11 +89,20 @@ export function getPage(file: string): Page {
   if (title) root.children.shift();
 
   resolve(root, file);
+  const ids = new Map<string, number>();
+  visit(root, (node) => {
+    if (node.type !== "heading") return;
+    const base = textOf(node).toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-") || "section";
+    const count = ids.get(base) ?? 0;
+    ids.set(base, count + 1);
+    node.data = { ...node.data, id: count ? `${base}-${count}` : base };
+  });
   const page = {
     file,
     title: title ?? allPages().find((item) => item.file === file)?.title ?? file,
     description: frontmatter.description,
     aliases: frontmatter.aliases,
+    duration: frontmatter.duration,
     root,
   };
   pages.set(file, page);
@@ -111,9 +121,9 @@ function expand(children: RootContent[], file: string, seen: Set<string>): RootC
     }
     if (node.type === "code" && node.lang === "excerpt") return [excerpt(node.value, file)];
     if (node.type === "code" && node.lang === "exercise") {
-      const { id } = parseYaml(node.value) ?? {};
+      const { id, ...config } = parseYaml(node.value) ?? {};
       if (typeof id !== "string") throw new Error(`${file}: an exercise block needs an id`);
-      return [{ type: "exercise", id } satisfies Exercise];
+      return [{ type: "exercise", id, config } satisfies Exercise];
     }
     if (node.type === "gitbook") node.children = expand(node.children, file, seen);
     return [node];
@@ -187,4 +197,129 @@ function termOf(file: string) {
 function visit(node: Nodes, fn: (node: Nodes) => void) {
   fn(node);
   if ("children" in node) for (const child of node.children) visit(child as Nodes, fn);
+}
+
+export interface GlossaryTerm {
+  file: string;
+  title: string;
+  href: string;
+  description: string;
+  aliases: string[];
+}
+
+/** Every term page listed under the glossary in SUMMARY.md, A to Z. */
+export function getGlossary(): GlossaryTerm[] {
+  return allPages()
+    .filter((item) => item.file.startsWith("glossary/") && !item.file.endsWith("README.md"))
+    .map((item) => {
+      const page = getPage(item.file);
+      return {
+        file: item.file,
+        title: page.title,
+        href: item.href,
+        description: page.description ?? "",
+        aliases: page.aliases ?? [],
+      };
+    })
+    .sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
+}
+
+/** The lessons that link to a page, in sidebar order. */
+export function getBacklinks(file: string) {
+  const href = routeOf(file);
+  return allPages().filter((item) => {
+    if (item.file === file || item.file.startsWith("glossary/")) return false;
+    let found = false;
+    visit(getPage(item.file).root, (node) => {
+      if (node.type === "link" && node.url.split("#")[0] === href) found = true;
+    });
+    return found;
+  });
+}
+
+/** The page's place in the sidebar: its pillar, its position there, and its neighbours in reading order. */
+export function getPosition(file: string) {
+  const pages = allPages();
+  const index = pages.findIndex((item) => item.file === file);
+  const parent = getNav()
+    .flatMap((group) => group.items)
+    .find((item) => item.file === file || item.children.some((child) => child.file === file));
+  const siblings = parent?.children ?? [];
+  return {
+    parent,
+    number: siblings.findIndex((child) => child.file === file) + 1,
+    total: siblings.length,
+    previous: index > 0 ? pages[index - 1] : undefined,
+    next: index >= 0 && index < pages.length - 1 ? pages[index + 1] : undefined,
+  };
+}
+
+/** The page's second-level headings, for an "On this page" list. */
+export function getOutline(root: Root) {
+  return root.children.flatMap((node) =>
+    node.type === "heading" && node.depth === 2 && node.data?.id ? [{ id: node.data.id, title: textOf(node) }] : [],
+  );
+}
+
+export interface PortalModule {
+  file: string;
+  href: string;
+  title: string;
+  duration?: string;
+}
+
+export interface PortalPillar {
+  file: string;
+  href: string;
+  title: string;
+  number: number;
+  modules: PortalModule[];
+}
+
+/** The pillars and their modules, for the lesson player's syllabus. */
+export function getPillars(): PortalPillar[] {
+  return getNav()
+    .flatMap((group) => group.items)
+    .filter((item) => /^\d+-/.test(item.file))
+    .map((item) => ({
+      file: item.file,
+      href: item.href,
+      title: item.title,
+      number: Number(item.file.match(/^(\d+)-/)![1]),
+      modules: item.children.map((child) => ({
+        file: child.file,
+        href: child.href,
+        title: child.title,
+        duration: getPage(child.file).duration,
+      })),
+    }));
+}
+
+/** Links a lesson points out to, and the sources it quotes, for its Resources tab. */
+export function getResources(root: Root) {
+  const resources: { title: string; href: string; kind: string }[] = [];
+  const seen = new Set<string>();
+  visit(root, (node) => {
+    if (node.type === "excerpt" && !seen.has(node.href)) {
+      seen.add(node.href);
+      resources.push({ title: node.title, href: node.href, kind: "Builder docs" });
+    }
+    if (node.type === "link" && /^https?:/.test(node.url) && !seen.has(node.url)) {
+      seen.add(node.url);
+      resources.push({ title: textOf(node), href: node.url, kind: new URL(node.url).hostname.replace(/^www\./, "") });
+    }
+  });
+  return resources;
+}
+
+/** Glossary terms a lesson links to, in the order they first appear. */
+export function getTerms(root: Root) {
+  const terms = new Map<string, { title: string; href: string; description: string }>();
+  visit(root, (node) => {
+    if (node.type === "link" && node.data?.term && !terms.has(node.url)) {
+      const file = allPages().find((item) => item.href === node.url)?.file;
+      terms.set(node.url, { title: file ? getPage(file).title : textOf(node), href: node.url, description: node.data.term });
+    }
+  });
+  return [...terms.values()];
 }
