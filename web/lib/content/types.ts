@@ -19,6 +19,14 @@ export interface Excerpt extends Parent {
   children: RootContent[];
 }
 
+/** A glossary term's definition, dropped into a lesson. */
+export interface GlossaryCard extends Node {
+  type: "glossaryCard";
+  title: string;
+  href: string;
+  description: string;
+}
+
 export interface Exercise extends Node {
   type: "exercise";
   id: string;
@@ -31,11 +39,13 @@ declare module "mdast" {
     gitbook: GitbookBlock;
     excerpt: Excerpt;
     exercise: Exercise;
+    glossaryCard: GlossaryCard;
   }
   interface BlockContentMap {
     gitbook: GitbookBlock;
     excerpt: Excerpt;
     exercise: Exercise;
+    glossaryCard: GlossaryCard;
   }
   interface HeadingData {
     /** The anchor ID, unique within the page. */

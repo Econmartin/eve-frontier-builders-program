@@ -4,12 +4,16 @@ import { join, posix } from "node:path";
 import type { Heading, List, Nodes, Root, RootContent } from "mdast";
 import { parse as parseYaml } from "yaml";
 import { includeOf, parseMarkdown, tagOf, textOf } from "./parse";
-import type { Excerpt, Exercise, NavGroup, NavItem } from "./types";
+import type { Excerpt, Exercise, GlossaryCard, NavGroup, NavItem } from "./types";
 
-/** The GitBook space; the site builds from web/, so it sits one level up. */
+/**
+ * Three sources, one level up from web/: the GitBook space (glossary and
+ * library), the curriculum that joins it up into courses, and the pinned
+ * builder docs.
+ */
 const contentRoot = join(process.cwd(), "..", "content");
+const curriculumRoot = join(process.cwd(), "..", "curriculum");
 const vendorRoot = join(process.cwd(), "..", "vendor");
-const basePath = "/learn";
 
 interface Page {
   file: string;
@@ -26,31 +30,32 @@ interface VendorSource {
   files: Record<string, string>;
 }
 
-// next dev doesn't watch content/, so caching is for builds only; dev reads every request
+// next dev doesn't watch these folders, so builds cache for good and dev only
+// for a second, long enough to cover one page render
 const cache = process.env.NODE_ENV === "production";
+const fresh = (at: number) => cache || Date.now() - at < 1000;
 
-const read = (file: string) => readFileSync(join(contentRoot, file), "utf8");
+/** Lessons come from the curriculum; every other Markdown file from the GitBook space. */
+const read = (file: string) =>
+  readFileSync(file.startsWith("lessons/") ? join(curriculumRoot, file) : join(contentRoot, file), "utf8");
 
-/** The route for a content file: `0-foundations/README.md` → `/learn/0-foundations`. */
-export function routeOf(file: string) {
-  const path = file.replace(/(^|\/)README\.md$/, "").replace(/\.md$/, "");
-  return path ? `${basePath}/${path}` : basePath;
-}
+const readYaml = (file: string) => parseYaml(readFileSync(join(curriculumRoot, file), "utf8")) ?? {};
 
-let nav: NavGroup[] | undefined;
+/* ---------- the GitBook space ---------- */
 
-/** The sidebar, read from SUMMARY.md as GitBook does. */
+let nav: { at: number; groups: NavGroup[] } | undefined;
+
+/** The GitBook space's SUMMARY.md: which glossary and library pages exist. */
 export function getNav(): NavGroup[] {
-  if (cache && nav) return nav;
+  if (nav && fresh(nav.at)) return nav.groups;
   const { root } = parseMarkdown(read("SUMMARY.md"), "SUMMARY.md");
   const groups: NavGroup[] = [{ title: null, items: [] }];
-
   for (const node of root.children) {
     if (node.type === "heading" && node.depth === 2) groups.push({ title: textOf(node), items: [] });
     if (node.type === "list") groups.at(-1)!.items.push(...navItems(node));
   }
-  nav = groups.filter((group) => group.items.length);
-  return nav;
+  nav = { at: Date.now(), groups: groups.filter((group) => group.items.length) };
+  return nav.groups;
 }
 
 function navItems(list: List): NavItem[] {
@@ -61,34 +66,209 @@ function navItems(list: List): NavItem[] {
     return [{
       title: textOf(link),
       file: link.url,
-      href: routeOf(link.url),
+      href: routeOf(link.url) ?? "",
       children: rest.flatMap((child) => (child.type === "list" ? navItems(child) : [])),
     }];
   });
 }
 
-function flatten(items: NavItem[]): NavItem[] {
-  return items.flatMap((item) => [item, ...flatten(item.children)]);
+const flatten = (items: NavItem[]): NavItem[] => items.flatMap((item) => [item, ...flatten(item.children)]);
+
+/** Every page in the GitBook space. */
+const spacePages = () => getNav().flatMap((group) => flatten(group.items));
+
+/* ---------- the curriculum: courses list modules, modules list lessons ---------- */
+
+export interface Lesson {
+  file: string;
+  slug: string;
+  title: string;
+  href: string;
+  description?: string;
+  duration?: string;
 }
 
-export function allPages() {
-  return getNav().flatMap((group) => flatten(group.items));
+export interface Module extends Lesson {
+  intro?: string;
+  lessons: Lesson[];
 }
+
+export interface Course extends Lesson {
+  pillar?: number;
+  intro?: string;
+  modules: Module[];
+}
+
+export interface Pathway extends Lesson {
+  audience?: string;
+  intro?: string;
+  courses: Course[];
+}
+
+interface Index {
+  courses: { title: string; description?: string; intro?: string; list: string[] };
+  pathways: { title: string; description?: string; intro?: string; list: string[] };
+}
+
+/** The curriculum's index: the Courses and Pathways pages, and what's on them in order. */
+export const getIndex = (): Index => readYaml("index.yaml");
+
+/** A Markdown page's frontmatter and title, without resolving its content. */
+function headerOf(file: string) {
+  const { frontmatter, root } = parseMarkdown(read(file), file);
+  const heading = root.children.find((node) => node.type === "heading" && node.depth === 1);
+  return { ...frontmatter, title: heading ? textOf(heading) : posix.basename(file, ".md") };
+}
+
+function lessonOf(slug: string, moduleHref: string, from: string): Lesson {
+  const file = `lessons/${slug}.md`;
+  let header;
+  try {
+    header = headerOf(file);
+  } catch {
+    throw new Error(`${from}: no lesson "${slug}" in curriculum/lessons/`);
+  }
+  return { file, slug, title: header.title, description: header.description, duration: header.duration, href: `${moduleHref}/${slug}` };
+}
+
+let courses: { at: number; list: Course[] } | undefined;
+
+/** Every course in the index, composed from the modules and lessons it lists. */
+export function getCourses(): Course[] {
+  if (courses && fresh(courses.at)) return courses.list;
+  const list = getIndex().courses.list.map((slug): Course => {
+    const file = `courses/${slug}.yaml`;
+    const course = readYaml(file);
+    const href = `/courses/${slug}`;
+    return {
+      file,
+      slug,
+      title: course.title,
+      description: course.description,
+      pillar: course.pillar,
+      intro: course.intro,
+      href,
+      modules: (course.modules ?? []).map((moduleSlug: string): Module => {
+        const moduleFile = `modules/${moduleSlug}.yaml`;
+        let part;
+        try {
+          part = readYaml(moduleFile);
+        } catch {
+          throw new Error(`curriculum/${file}: no module "${moduleSlug}" in curriculum/modules/`);
+        }
+        const moduleHref = `${href}/${moduleSlug}`;
+        return {
+          file: moduleFile,
+          slug: moduleSlug,
+          title: part.title,
+          description: part.description,
+          intro: part.intro,
+          href: moduleHref,
+          lessons: (part.lessons ?? []).map((lesson: string) => lessonOf(lesson, moduleHref, `curriculum/${moduleFile}`)),
+        };
+      }),
+    };
+  });
+  courses = { at: Date.now(), list };
+  return list;
+}
+
+/** A module or lesson in the context of one course, with its neighbours there. */
+export function inCourse(courseSlug: string, moduleSlug: string, lessonSlug?: string) {
+  const course = getCourses().find((c) => c.slug === courseSlug);
+  const part = course?.modules.find((m) => m.slug === moduleSlug);
+  const lesson = lessonSlug ? part?.lessons.find((l) => l.slug === lessonSlug) : undefined;
+  if (!course || !part || (lessonSlug && !lesson)) return undefined;
+
+  const order: Lesson[] = course.modules.flatMap((m) => [m, ...m.lessons]);
+  const here = lesson ?? part;
+  const index = order.findIndex((page) => page.href === here.href);
+  const lessons = course.modules.flatMap((m) => m.lessons);
+  return {
+    course,
+    module: part,
+    lesson,
+    number: lessons.findIndex((l) => l.href === here.href) + 1,
+    total: lessons.length,
+    previous: order[index - 1],
+    next: order[index + 1],
+  };
+}
+
+/** Every pathway in the index, with the courses it lists, in its order. */
+export function getPathways(): Pathway[] {
+  const all = getCourses();
+  return getIndex().pathways.list.map((slug) => {
+    const file = `pathways/${slug}.yaml`;
+    const pathway = readYaml(file);
+    return {
+      file,
+      slug,
+      title: pathway.title,
+      description: pathway.description,
+      audience: pathway.audience,
+      intro: pathway.intro,
+      href: `/pathways/${slug}`,
+      courses: (pathway.courses ?? []).map((course: string) => {
+        const found = all.find((c) => c.slug === course);
+        if (!found) throw new Error(`curriculum/${file}: no course "${course}" in the index`);
+        return found;
+      }),
+    };
+  });
+}
+
+/* ---------- addresses ---------- */
+
+/**
+ * The address of a page on the site. Glossary pages mirror their path. A
+ * lesson can sit in several modules, so its address is where it first
+ * appears. Library sections and the space's own guide have none.
+ */
+export function routeOf(file: string): string | undefined {
+  if (file.startsWith("glossary/")) return `/${file.replace(/(^|\/)README\.md$/, "").replace(/\.md$/, "")}`;
+  if (file.startsWith("lessons/")) {
+    for (const course of getCourses()) {
+      for (const part of course.modules) {
+        const lesson = part.lessons.find((l) => l.file === file);
+        if (lesson) return lesson.href;
+      }
+    }
+  }
+  return undefined;
+}
+
+/* ---------- pages ---------- */
 
 const pages = new Map<string, Page>();
 
+/** A lesson or glossary page, with its drop-ins expanded and links resolved. */
 export function getPage(file: string): Page {
   const cached = cache && pages.get(file);
   if (cached) return cached;
+  const { frontmatter } = parseMarkdown(read(file), file);
+  const page = {
+    file,
+    title: headerOf(file).title,
+    description: frontmatter.description,
+    aliases: frontmatter.aliases,
+    duration: frontmatter.duration,
+    root: renderMarkdown(read(file), file),
+  };
+  pages.set(file, page);
+  return page;
+}
 
-  const { frontmatter, root } = parseMarkdown(read(file), file);
+/**
+ * Parses Markdown and resolves it. Curriculum text (lessons, and the intros in
+ * the YAML files) names what it links to; GitBook pages link by path.
+ */
+export function renderMarkdown(source: string, file: string): Root {
+  const { root } = parseMarkdown(source, file);
   root.children = expand(root.children, file, new Set([file]));
-
-  const heading = root.children[0];
-  const title = heading?.type === "heading" && heading.depth === 1 ? textOf(heading) : undefined;
-  if (title) root.children.shift();
-
+  dropTitle(root);
   resolve(root, file);
+
   const ids = new Map<string, number>();
   visit(root, (node) => {
     if (node.type !== "heading") return;
@@ -97,29 +277,38 @@ export function getPage(file: string): Page {
     ids.set(base, count + 1);
     node.data = { ...node.data, id: count ? `${base}-${count}` : base };
   });
-  const page = {
-    file,
-    title: title ?? allPages().find((item) => item.file === file)?.title ?? file,
-    description: frontmatter.description,
-    aliases: frontmatter.aliases,
-    duration: frontmatter.duration,
-    root,
-  };
-  pages.set(file, page);
-  return page;
+  return root;
 }
 
-/** Splices in `{% include %}` files and turns `excerpt` and `exercise` code blocks into their nodes. */
+function dropTitle(root: Root) {
+  const first = root.children[0];
+  if (first?.type === "heading" && first.depth === 1) root.children.shift();
+}
+
+/**
+ * Turns drop-in blocks into their content: `include` (a library section),
+ * `excerpt` (pinned builder docs), `glossary` (a term card) and `exercise`.
+ * Included content resolves its links from its own file.
+ */
 function expand(children: RootContent[], file: string, seen: Set<string>): RootContent[] {
   return children.flatMap((node): RootContent[] => {
-    const include = includeOf(node);
-    if (include) {
-      const target = posix.join(posix.dirname(file), include);
-      if (seen.has(target)) throw new Error(`${file}: ${target} includes itself`);
-      const { root } = parseMarkdown(read(target), target);
-      return expand(root.children, target, new Set([...seen, target]));
+    const tagInclude = includeOf(node);
+    if (tagInclude) return include(posix.join(posix.dirname(file), tagInclude), file, seen);
+
+    if (node.type === "code" && node.lang === "include") {
+      const { file: target } = parseYaml(node.value) ?? {};
+      if (typeof target !== "string" || !target.startsWith("library/")) {
+        throw new Error(`${file}: an include block needs a file in library/`);
+      }
+      return include(target, file, seen);
     }
     if (node.type === "code" && node.lang === "excerpt") return [excerpt(node.value, file)];
+    if (node.type === "code" && node.lang === "glossary") {
+      const { term } = parseYaml(node.value) ?? {};
+      const target = `glossary/${term}.md`;
+      const header = termHeader(target, file);
+      return [{ type: "glossaryCard", title: header.title, description: header.description, href: routeOf(target)! } satisfies GlossaryCard];
+    }
     if (node.type === "code" && node.lang === "exercise") {
       const { id, ...config } = parseYaml(node.value) ?? {};
       if (typeof id !== "string") throw new Error(`${file}: an exercise block needs an id`);
@@ -128,6 +317,23 @@ function expand(children: RootContent[], file: string, seen: Set<string>): RootC
     if (node.type === "gitbook") node.children = expand(node.children, file, seen);
     return [node];
   });
+}
+
+function include(target: string, from: string, seen: Set<string>): RootContent[] {
+  if (seen.has(target)) throw new Error(`${from}: ${target} includes itself`);
+  if (!spacePages().some((item) => item.file === target)) throw new Error(`${from}: ${target} isn't in the GitBook space's SUMMARY.md`);
+  const { root } = parseMarkdown(read(target), target);
+  root.children = expand(root.children, target, new Set([...seen, target]));
+  dropTitle(root);
+  resolve(root, target);
+  return root.children;
+}
+
+function termHeader(target: string, from: string) {
+  if (!spacePages().some((item) => item.file === target)) throw new Error(`${from}: no glossary term ${target}`);
+  const header = headerOf(target);
+  if (!header.description) throw new Error(`${target}: glossary terms need a description`);
+  return header as typeof header & { description: string };
 }
 
 let manifest: Record<string, VendorSource> | undefined;
@@ -167,37 +373,51 @@ function excerpt(value: string, file: string): Excerpt {
   return { type: "excerpt", title: textOf(root.children[start]), href: blob + path, children };
 }
 
-/** Rewrites links to other pages as routes, marks glossary links, and rejects broken ones. */
+/**
+ * Rewrites links as site addresses, marks glossary links for previews, and
+ * rejects broken ones. Curriculum text uses `glossary:name` and `lesson:name`;
+ * GitBook pages link to glossary pages by relative path.
+ */
 function resolve(root: Root, file: string) {
-  const known = new Set(allPages().map((item) => item.file));
+  const curriculum = !/^(glossary|library)\//.test(file);
 
   visit(root, (node) => {
     if (node.type === "paragraph" && tagOf(node)) {
       throw new Error(`${file}: GitBook blocks can't sit inside lists or quotes: "${textOf(node).trim()}"`);
     }
-    if (node.type !== "link" || /^[a-z]+:|^#|^\//.test(node.url)) return;
-
+    if (node.type !== "link") return;
     const [path, hash] = node.url.split("#");
-    const target = posix.normalize(posix.join(posix.dirname(file), decodeURI(path)));
-    if (!known.has(target)) throw new Error(`${file}: link to ${target}, which isn't in SUMMARY.md`);
+    const suffix = hash ? `#${hash}` : "";
 
-    node.url = routeOf(target) + (hash ? `#${hash}` : "");
-    if (target.startsWith("glossary/") && !target.endsWith("README.md")) {
-      node.data = { ...node.data, term: termOf(target) };
+    let target: string;
+    if (/^glossary:/.test(path)) {
+      target = `glossary/${path.slice(9)}.md`;
+    } else if (/^lesson:/.test(path)) {
+      target = `lessons/${path.slice(7)}.md`;
+      const href = routeOf(target);
+      if (!href) throw new Error(`${file}: link to lesson "${path.slice(7)}", which isn't in any course`);
+      node.url = href + suffix;
+      return;
+    } else if (/^[a-z]+:|^#|^\//.test(node.url)) {
+      return;
+    } else if (curriculum) {
+      throw new Error(`${file}: link to "${node.url}"; use glossary:name or lesson:name`);
+    } else {
+      target = posix.normalize(posix.join(posix.dirname(file), decodeURI(path)));
+      if (!target.startsWith("glossary/")) throw new Error(`${file}: link to ${target}; GitBook pages can only link to the glossary`);
     }
-  });
-}
 
-function termOf(file: string) {
-  const { frontmatter } = parseMarkdown(read(file), file);
-  if (!frontmatter.description) throw new Error(`${file}: glossary terms need a description`);
-  return frontmatter.description;
+    node.url = routeOf(target)! + suffix;
+    if (!target.endsWith("README.md")) node.data = { ...node.data, term: termHeader(target, file).description };
+  });
 }
 
 function visit(node: Nodes, fn: (node: Nodes) => void) {
   fn(node);
   if ("children" in node) for (const child of node.children) visit(child as Nodes, fn);
 }
+
+/* ---------- derived lists ---------- */
 
 export interface GlossaryTerm {
   file: string;
@@ -207,51 +427,29 @@ export interface GlossaryTerm {
   aliases: string[];
 }
 
-/** Every term page listed under the glossary in SUMMARY.md, A to Z. */
+/** Every term in the GitBook space's glossary, A to Z. */
 export function getGlossary(): GlossaryTerm[] {
-  return allPages()
+  return spacePages()
     .filter((item) => item.file.startsWith("glossary/") && !item.file.endsWith("README.md"))
     .map((item) => {
       const page = getPage(item.file);
-      return {
-        file: item.file,
-        title: page.title,
-        href: item.href,
-        description: page.description ?? "",
-        aliases: page.aliases ?? [],
-      };
+      return { file: item.file, title: page.title, href: item.href, description: page.description ?? "", aliases: page.aliases ?? [] };
     })
     .sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
 }
 
-/** The lessons that link to a page, in sidebar order. */
+/** The lessons that link to or drop in a glossary term, each at its first address. */
 export function getBacklinks(file: string) {
   const href = routeOf(file);
-  return allPages().filter((item) => {
-    if (item.file === file || item.file.startsWith("glossary/")) return false;
+  const lessons = new Map(getCourses().flatMap((c) => c.modules.flatMap((m) => m.lessons)).map((l) => [l.file, l]));
+  return [...lessons.values()].filter((lesson) => {
     let found = false;
-    visit(getPage(item.file).root, (node) => {
-      if (node.type === "link" && node.url.split("#")[0] === href) found = true;
+    visit(getPage(lesson.file).root, (node) => {
+      const url = node.type === "link" ? node.url : node.type === "glossaryCard" ? node.href : undefined;
+      if (url?.split("#")[0] === href) found = true;
     });
     return found;
-  });
-}
-
-/** The page's place in the sidebar: its pillar, its position there, and its neighbours in reading order. */
-export function getPosition(file: string) {
-  const pages = allPages();
-  const index = pages.findIndex((item) => item.file === file);
-  const parent = getNav()
-    .flatMap((group) => group.items)
-    .find((item) => item.file === file || item.children.some((child) => child.file === file));
-  const siblings = parent?.children ?? [];
-  return {
-    parent,
-    number: siblings.findIndex((child) => child.file === file) + 1,
-    total: siblings.length,
-    previous: index > 0 ? pages[index - 1] : undefined,
-    next: index >= 0 && index < pages.length - 1 ? pages[index + 1] : undefined,
-  };
+  }).map((lesson) => ({ ...lesson, href: routeOf(lesson.file)! }));
 }
 
 /** The page's second-level headings, for an "On this page" list. */
@@ -259,40 +457,6 @@ export function getOutline(root: Root) {
   return root.children.flatMap((node) =>
     node.type === "heading" && node.depth === 2 && node.data?.id ? [{ id: node.data.id, title: textOf(node) }] : [],
   );
-}
-
-export interface PortalModule {
-  file: string;
-  href: string;
-  title: string;
-  duration?: string;
-}
-
-export interface PortalPillar {
-  file: string;
-  href: string;
-  title: string;
-  number: number;
-  modules: PortalModule[];
-}
-
-/** The pillars and their modules, for the lesson player's syllabus. */
-export function getPillars(): PortalPillar[] {
-  return getNav()
-    .flatMap((group) => group.items)
-    .filter((item) => /^\d+-/.test(item.file))
-    .map((item) => ({
-      file: item.file,
-      href: item.href,
-      title: item.title,
-      number: Number(item.file.match(/^(\d+)-/)![1]),
-      modules: item.children.map((child) => ({
-        file: child.file,
-        href: child.href,
-        title: child.title,
-        duration: getPage(child.file).duration,
-      })),
-    }));
 }
 
 /** Links a lesson points out to, and the sources it quotes, for its Resources tab. */
@@ -312,13 +476,16 @@ export function getResources(root: Root) {
   return resources;
 }
 
-/** Glossary terms a lesson links to, in the order they first appear. */
+/** Glossary terms a lesson links to or drops in, in the order they first appear. */
 export function getTerms(root: Root) {
   const terms = new Map<string, { title: string; href: string; description: string }>();
   visit(root, (node) => {
+    if (node.type === "glossaryCard" && !terms.has(node.href)) {
+      terms.set(node.href, { title: node.title, href: node.href, description: node.description });
+    }
     if (node.type === "link" && node.data?.term && !terms.has(node.url)) {
-      const file = allPages().find((item) => item.href === node.url)?.file;
-      terms.set(node.url, { title: file ? getPage(file).title : textOf(node), href: node.url, description: node.data.term });
+      const file = spacePages().find((item) => item.href === node.url)?.file;
+      terms.set(node.url, { title: file ? headerOf(file).title : textOf(node), href: node.url, description: node.data.term });
     }
   });
   return [...terms.values()];

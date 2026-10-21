@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plate } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { getOutline, getPage, getPillars, getPosition, getResources, getTerms } from "@/lib/content/load";
+import { getOutline, getPage, getResources, getTerms, inCourse, renderMarkdown } from "@/lib/content/load";
 import { Markdown } from "@/components/lesson/markdown";
 import { LessonTabs, MarkComplete } from "./lesson-tabs";
 import { PortalShell } from "./portal-shell";
@@ -9,22 +9,25 @@ import { PortalShell } from "./portal-shell";
 const idx = "font-heading text-step--2 font-bold tracking-[0.08em] text-muted uppercase";
 
 /**
- * A pillar page in the lesson player. The Markdown is the Overview tab; the
- * syllabus, resources, outline and terms are all derived from the content.
+ * A module or lesson page in the lesson player. The Markdown is the Overview
+ * tab; the syllabus, resources, outline and terms all come from the content.
  */
-export function Portal({ file }: { file: string }) {
-  const page = getPage(file);
-  const pillars = getPillars();
-  const pillar = pillars.find((p) => p.file === file || p.modules.some((m) => m.file === file))!;
-  const { previous, next } = getPosition(file);
+export function Portal({ course: courseSlug, module: moduleSlug, lesson: lessonSlug }: { course: string; module: string; lesson?: string }) {
+  const { course, module, lesson, previous, next } = inCourse(courseSlug, moduleSlug, lessonSlug)!;
+  const here = lesson ?? module;
+  const file = here.file;
+  // A module's page is its intro from the curriculum; a lesson's is its Markdown file
+  const page = lesson
+    ? getPage(lesson.file)
+    : { title: module.title, description: module.description, duration: undefined, root: renderMarkdown(module.intro ?? "", module.file) };
   const outline = getOutline(page.root);
   const terms = getTerms(page.root);
-  const isOverview = pillar.file === file;
+  const moduleNumber = course.modules.indexOf(module) + 1;
 
   return (
     <PortalShell
-      pillars={pillars}
-      current={file}
+      course={course}
+      current={here.href}
       outline={
         <div className="grid gap-m px-s pt-s pb-xl text-step--1">
           {outline.length > 0 && (
@@ -63,11 +66,11 @@ export function Portal({ file }: { file: string }) {
       <article className="mx-auto grid max-w-[55rem] gap-m px-s-l pt-m pb-2xl">
         <header className="grid gap-2xs">
           <p className={idx}>
-            Pillar {String(pillar.number).padStart(2, "0")} · {pillar.title.replace(/^Pillar \d+ — /, "")}
+            Module {String(moduleNumber).padStart(2, "0")} · {module.title}
           </p>
-          <h1 className="text-step-3">{isOverview ? "Overview" : page.title}</h1>
+          <h1 className="text-step-3">{page.title}</h1>
           {page.description && <p className="text-step-0 text-muted">{page.description}</p>}
-          {!isOverview && (
+          {lesson && (
             <div className="mt-2xs flex flex-wrap items-center gap-x-s gap-y-2xs">
               {page.duration && <span className={idx}>{page.duration}</span>}
               <MarkComplete file={file} />
@@ -76,6 +79,26 @@ export function Portal({ file }: { file: string }) {
         </header>
 
         <LessonTabs file={file} overview={<Markdown nodes={page.root.children} />} resources={getResources(page.root)} />
+
+        {!lesson && (
+          <section aria-labelledby="lessons">
+            <h2 id="lessons" className={idx}>Lessons in this module</h2>
+            <ol className="mt-xs grid gap-2xs">
+              {module.lessons.map((item, i) => (
+                <li key={item.file}>
+                  <Link href={item.href} className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-xs border border-line bg-card px-s py-xs hover:bg-card-secondary">
+                    <span className="font-heading text-muted tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                    <span>
+                      <span className="block font-bold">{item.title}</span>
+                      {item.description && <span className="block text-step--1 text-muted">{item.description}</span>}
+                    </span>
+                    <span className="text-step--2 text-muted">{item.duration}</span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
         {(previous || next) && (
           <nav aria-label="Previous and next" className="mt-l flex">

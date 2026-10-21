@@ -118,6 +118,16 @@ export function Markdown({ nodes }: { nodes: RootContent[] }) {
         throw new Error("A tab block has to sit inside a tabs block");
       case "excerpt":
         return <Excerpt key={key} title={node.title} href={node.href}>{all(node.children)}</Excerpt>;
+      case "glossaryCard":
+        return (
+          <aside key={key} aria-label={`Glossary: ${node.title}`} className="mt-s border-l-2 border-accent bg-card px-s py-xs">
+            <p className="font-heading text-step--2 font-bold tracking-[0.08em] text-muted uppercase">Glossary</p>
+            <p className="mt-3xs">
+              <Link href={node.href} className="font-bold text-accent-text underline underline-offset-2">{node.title}</Link>
+              <span className="text-muted"> — {node.description}</span>
+            </p>
+          </aside>
+        );
       case "exercise":
         return <Exercise key={key} id={node.id} config={node.config} />;
       default:

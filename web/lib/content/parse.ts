@@ -10,6 +10,8 @@ export interface Frontmatter {
   description?: string;
   aliases?: string[];
   duration?: string;
+  pillar?: number;
+  audience?: string;
 }
 
 const processor = unified().use(remarkParse).use(remarkGfm).use(remarkFrontmatter);
