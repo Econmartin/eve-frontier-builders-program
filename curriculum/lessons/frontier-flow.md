@@ -1,9 +1,9 @@
 ---
 duration: 15 min
-description: Build a Smart Storage Unit vending machine without writing Move by hand.
+description: A low-code example that builds a Smart Storage Unit vending machine without writing Move by hand.
 ---
 
-# A vending machine
+# Frontier Flow
 
 Low-code tools let you describe what you want by arranging blocks and filling in settings, then generate the code for you. Every one of them ends in the same place: real Move code that extends a [Smart Assembly](glossary:smart-assembly).
 
