@@ -4,6 +4,28 @@ description: Every word the Builder Program uses, with a short definition and a 
 
 # Glossary
 
+## A
+
+### Agentic engineering
+
+*dApps & tools*
+
+Building with AI agents by planning first, working in small steps and checking every result. The careful way to build anything people will rely on.
+
+### AI agent
+
+*dApps & tools · also: agent*
+
+An AI that does the work, not just chats about it: it can write files, run them and check the result.
+
+## C
+
+### Checkpoint
+
+*dApps & tools · also: save point*
+
+A save point an AI agent can go back to if a change goes wrong.
+
 ## M
 
 ### Move
@@ -35,3 +57,11 @@ An in-game structure that lives onchain as an object, such as a gate, a turret o
 *Game & economy*
 
 The live EVE Frontier server, where what a builder ships meets other players.
+
+## V
+
+### Vibe coding
+
+*dApps & tools*
+
+Asking an AI for code and using what comes back without planning or checking it. Great for a quick experiment, risky for anything people rely on.

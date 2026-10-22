@@ -8,7 +8,8 @@ The courses on the site are put together here, from parts. Nothing in this folde
 | `courses/{course}.yaml` | A course: title, description, `pillar`, and its `modules` in order | `/courses/{course}` |
 | `modules/{module}.yaml` | A module: title, description, and its `lessons` in order | `/courses/{course}/{module}` |
 | `lessons/{lesson}.md` | A lesson: your own text, plus parts dropped in from elsewhere | `/courses/{course}/{module}/{lesson}` |
-| `pathways/{pathway}.yaml` | A pathway: title, description, `audience`, and its `courses` in order | `/pathways/{pathway}` |
+| `pathways/{pathway}.yaml` | A pathway: title, description, `audience`, the answers it suits under `for:`, and its `courses` in order | `/pathways/{pathway}` |
+| `questions.yaml` | Questions the reader answers, with the text each answer brings | Asked on the Pathways page and in lessons |
 
 Courses, modules and pathways refer to each other by file name, without the extension. A module can sit in more than one course and a lesson in more than one module; each place gets its own address, and search engines are pointed at the first. File names become addresses, so keep them short, lowercase and hyphenated, and don't rename one that's already live.
 
@@ -55,4 +56,19 @@ nodes:
 ```
 ````
 
-The build checks every name, link and drop-in, and fails with the file and the problem if one doesn't resolve.
+## Personalising a lesson
+
+Answers to the questions in `questions.yaml` stay on the reader's device. The Pathways page asks the ones listed under `finder.ask` in `index.yaml`; a lesson can ask others, and every lesson can use the answers.
+
+| Block or syntax | What it does |
+| --- | --- |
+| `{{idea.topic\|my idea}}` | Drops in a field of the reader's answer, or the fallback after `\|` |
+| `[[It's {{audience.phrase}}.]]` | Leaves the part out when an answer inside it is missing |
+| `question` | Asks a question: `ask: audience` |
+| `by-answer` | Different Markdown per answer: `answer`, `variants` keyed by answer, an optional `default` and `label` |
+| `prompt` | A message the reader might send, with `{{…}}` filled in: `label`, `text`, `copy: true` |
+| `pick` | Pick the better of two messages, chosen by an answer: `by`, `pairs`, `right`, `wrong`, `again` |
+| `conversation` | An example chat stepped through a message at a time, chosen by an answer: `by`, `examples` |
+| `weak-strong` | Pairs of a weaker and a stronger way to ask: `items` |
+
+The build checks every name, link and drop-in, and fails with the file and the problem if one doesn't resolve, including a question, answer or field that doesn't exist.
