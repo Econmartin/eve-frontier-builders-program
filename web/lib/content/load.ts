@@ -4,7 +4,21 @@ import { join, posix } from "node:path";
 import type { Heading, List, Nodes, Root, RootContent } from "mdast";
 import { parse as parseYaml } from "yaml";
 import { includeOf, parseMarkdown, tagOf, textOf } from "./parse";
-import type { Excerpt, Exercise, GlossaryCard, NavGroup, NavItem } from "./types";
+import type { Template, TemplatePart } from "@/lib/template";
+import type {
+  ByAnswer,
+  ConversationBlock,
+  Excerpt,
+  Exercise,
+  GlossaryCard,
+  NavGroup,
+  NavItem,
+  PickBlock,
+  PromptBlock,
+  Question,
+  QuestionBlock,
+  WeakStrong,
+} from "./types";
 
 /**
  * Three sources, one level up from web/: the GitBook space (glossary and
@@ -191,12 +205,20 @@ export interface Course extends Lesson {
 export interface Pathway extends Lesson {
   audience?: string;
   intro?: string;
+  /** The answers this pathway suits, such as `{ way: "agentic" }`. */
+  for?: Record<string, string>;
   courses: Course[];
 }
 
 interface Index {
   courses: { title: string; description?: string; intro?: string; list: string[] };
-  pathways: { title: string; description?: string; intro?: string; list: string[] };
+  pathways: {
+    title: string;
+    description?: string;
+    intro?: string;
+    finder?: { title: string; ask: string[]; result: string; none: string };
+    list: string[];
+  };
 }
 
 /** The curriculum's index: the Courses and Pathways pages, and what's on them in order. */
@@ -297,6 +319,7 @@ export function getPathways(): Pathway[] {
       description: pathway.description,
       audience: pathway.audience,
       intro: pathway.intro,
+      for: pathway.for,
       href: `/pathways/${slug}`,
       courses: (pathway.courses ?? []).map((course: string) => {
         const found = all.find((c) => c.slug === course);
@@ -305,6 +328,54 @@ export function getPathways(): Pathway[] {
       }),
     };
   });
+}
+
+/* ---------- questions: answers that personalise lessons ---------- */
+
+/** The questions in curriculum/questions.yaml, by id. */
+export function getQuestions(): Record<string, Question> {
+  const raw = readYaml("questions.yaml") as Record<string, Omit<Question, "id">>;
+  return Object.fromEntries(Object.entries(raw).map(([id, question]) => [id, { id, ...question }]));
+}
+
+function questionOf(id: unknown, from: string) {
+  const question = getQuestions()[String(id)];
+  if (!question) throw new Error(`${from}: no question "${id}" in curriculum/questions.yaml`);
+  return question;
+}
+
+/** Checks a map is keyed by a question's option ids. */
+function checkKeys(keys: string[], question: Question, from: string) {
+  const ids = question.options.map((option) => option.id);
+  for (const key of keys) {
+    if (!ids.includes(key)) throw new Error(`${from}: "${key}" isn't an answer to "${question.id}" (${ids.join(", ")})`);
+  }
+}
+
+/** Compiles `{{question.field|fallback}}` and `[[ … ]]` with every option's value. */
+export function compileTemplate(text: string, from: string): Template {
+  const parts: TemplatePart[] = [];
+  const pattern = /\[\[(.*?)\]\]|\{\{\s*([\w-]+)\.([\w-]+)(?:\|([^}]*))?\s*\}\}/gs;
+  let at = 0;
+  for (const match of text.matchAll(pattern)) {
+    if (match.index > at) parts.push({ text: text.slice(at, match.index) });
+    if (match[1] !== undefined) {
+      parts.push({ optional: compileTemplate(match[1], from) });
+    } else {
+      const question = questionOf(match[2], from);
+      const field = match[3];
+      if (!question.options.some((option) => option[field] !== undefined)) {
+        throw new Error(`${from}: no answer to "${question.id}" has a "${field}"`);
+      }
+      const values = Object.fromEntries(
+        question.options.flatMap((option) => (option[field] !== undefined ? [[option.id, option[field]!]] : [])),
+      );
+      parts.push({ question: question.id, values, fallback: match[4] });
+    }
+    at = match.index + match[0].length;
+  }
+  if (at < text.length) parts.push({ text: text.slice(at) });
+  return parts;
 }
 
 /* ---------- addresses ---------- */
@@ -358,6 +429,7 @@ export function renderMarkdown(source: string, file: string): Root {
   root.children = expand(root.children, file, new Set([file]));
   dropTitle(root);
   resolve(root, file);
+  personalise(root, file);
 
   const ids = new Map<string, number>();
   visit(root, (node) => {
@@ -368,6 +440,18 @@ export function renderMarkdown(source: string, file: string): Root {
     node.data = { ...node.data, id: count ? `${base}-${count}` : base };
   });
   return root;
+}
+
+/** Turns text with `{{…}}` or `[[…]]` into answer text the browser fills in. */
+function personalise(root: Root, file: string) {
+  visit(root, (node) => {
+    if (!("children" in node)) return;
+    (node.children as Nodes[]).forEach((child, i) => {
+      if (child.type === "text" && /\{\{|\[\[/.test(child.value)) {
+        (node.children as Nodes[])[i] = { type: "answerText", template: compileTemplate(child.value, file) };
+      }
+    });
+  });
 }
 
 function dropTitle(root: Root) {
@@ -393,6 +477,42 @@ function expand(children: RootContent[], file: string, seen: Set<string>): RootC
       return include(target, file, seen);
     }
     if (node.type === "code" && node.lang === "excerpt") return [excerpt(node.value, file)];
+    const block = (lang: string) => (node.type === "code" && node.lang === lang ? (parseYaml(node.value) ?? {}) : undefined);
+    let config;
+    if ((config = block("question"))) {
+      return [{ type: "question", question: questionOf(config.ask, file) } satisfies QuestionBlock];
+    }
+    if ((config = block("by-answer"))) {
+      const question = questionOf(config.answer, file);
+      checkKeys(Object.keys(config.variants ?? {}), question, file);
+      if (config.default) checkKeys([config.default], question, file);
+      const variants = Object.fromEntries(
+        Object.entries(config.variants as Record<string, string>).map(([id, text]) => [id, renderMarkdown(String(text), file).children]),
+      );
+      return [{ type: "byAnswer", answer: question.id, label: config.label, fallback: config.default, variants } satisfies ByAnswer];
+    }
+    if ((config = block("prompt"))) {
+      return [{ type: "prompt", label: config.label ?? "You might say", copy: Boolean(config.copy), text: compileTemplate(String(config.text), file) } satisfies PromptBlock];
+    }
+    if ((config = block("pick"))) {
+      const question = questionOf(config.by, file);
+      checkKeys([...Object.keys(config.pairs ?? {}), config.default, ...(config["strong-first"] ?? [])], question, file);
+      return [{
+        type: "pick", by: question.id, fallback: config.default, label: config.label ?? "Pick one",
+        strongFirst: config["strong-first"] ?? [], right: config.right, wrong: config.wrong, again: config.again, pairs: config.pairs,
+      } satisfies PickBlock];
+    }
+    if ((config = block("conversation"))) {
+      const question = questionOf(config.by, file);
+      checkKeys([...Object.keys(config.examples ?? {}), config.default], question, file);
+      return [{
+        type: "conversation", by: question.id, fallback: config.default, frames: config.frames,
+        labels: { continue: config.continue, all: config.all, others: config.others, done: config.done }, examples: config.examples,
+      } satisfies ConversationBlock];
+    }
+    if ((config = block("weak-strong"))) {
+      return [{ type: "weakStrong", items: config.items } satisfies WeakStrong];
+    }
     if (node.type === "code" && node.lang === "glossary") {
       const { term } = parseYaml(node.value) ?? {};
       const found = termOf(String(term), file);

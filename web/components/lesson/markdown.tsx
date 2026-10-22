@@ -7,6 +7,7 @@ import { CodeBlock } from "./code-block";
 import { Excerpt } from "./excerpt";
 import { Exercise } from "./exercise";
 import { Hint } from "./hint";
+import { AnswerText, ByAnswerView, ConversationView, PickView, PromptView, QuestionField } from "./personal";
 import { Tabs } from "./tabs";
 import { Term } from "./term";
 
@@ -80,7 +81,7 @@ export function Markdown({ nodes }: { nodes: RootContent[] }) {
       case "blockquote":
         return <blockquote key={key} className="mt-s border-l-2 border-line pl-s">{all(node.children)}</blockquote>;
       case "code":
-        return <CodeBlock key={key} lang={node.lang} code={node.value} />;
+        return <CodeBlock key={key} lang={node.meta?.match(/title="([^"]*)"/)?.[1] ?? node.lang} code={node.value} />;
       case "thematicBreak":
         return <hr key={key} className="mt-l border-line" />;
       case "table": {
@@ -118,6 +119,38 @@ export function Markdown({ nodes }: { nodes: RootContent[] }) {
         throw new Error("A tab block has to sit inside a tabs block");
       case "excerpt":
         return <Excerpt key={key} title={node.title} href={node.href}>{all(node.children)}</Excerpt>;
+      case "answerText":
+        return <AnswerText key={key} template={node.template} />;
+      case "question":
+        return <QuestionField key={key} question={node.question} />;
+      case "byAnswer":
+        return (
+          <ByAnswerView
+            key={key}
+            answer={node.answer}
+            label={node.label}
+            fallback={node.fallback}
+            variants={Object.fromEntries(Object.entries(node.variants).map(([id, children]) => [id, <Markdown key={id} nodes={children} />]))}
+          />
+        );
+      case "prompt":
+        return <PromptView key={key} label={node.label} copy={node.copy} text={node.text} />;
+      case "pick":
+        return <PickView key={key} block={node} />;
+      case "conversation":
+        return <ConversationView key={key} block={node} />;
+      case "weakStrong":
+        return (
+          <ul key={key} role="list" className="mt-s grid gap-s md:grid-cols-2">
+            {node.items.map((item) => (
+              <li key={item.title} className="grid content-start gap-xs border border-line bg-card p-s">
+                <p className="font-bold">{item.title}</p>
+                <p className="text-step--1 text-muted"><span className="sr-only">Weaker: </span><span aria-hidden="true">✕ </span>&ldquo;{item.weak}&rdquo;</p>
+                <p className="border-l-2 border-accent bg-tint-background px-xs py-2xs text-step--1"><span className="sr-only">Stronger: </span>&ldquo;{item.strong}&rdquo;</p>
+              </li>
+            ))}
+          </ul>
+        );
       case "glossaryCard":
         return (
           <aside key={key} aria-label={`Glossary: ${node.title}`} className="mt-s border-l-2 border-accent bg-card px-s py-xs">
