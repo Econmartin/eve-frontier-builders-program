@@ -50,7 +50,7 @@ One of the five stages of the Builder Program's syllabus, numbered 0 to 4.
 
 An in-game structure that lives onchain as an object, such as a gate, a turret or a storage unit. Anyone can read it, and its owner can extend it.
 
-[Read the article →](concepts/smart-assembly.md)
+[Read the article →](glossary/smart-assembly.md)
 
 ### Stillness
 

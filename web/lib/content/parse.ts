@@ -21,8 +21,7 @@ const tagPattern = /^\{%\s*(end)?([\w-]+)(.*?)%\}$/;
 
 /**
  * Parses a GitBook Markdown page. `{% name %}` blocks become `gitbook` nodes
- * holding their children; `include` and any block the portal can't render
- * are left for the loader to resolve or reject.
+ * holding their children; any block the portal can't render is an error.
  */
 export function parseMarkdown(source: string, file: string) {
   const root = processor.parse(isolateTags(source)) as Root;
@@ -107,8 +106,6 @@ function group(children: RootContent[], file: string): RootContent[] {
       validate(block, file);
       parent.children.push(block);
       stack.push(block);
-    } else if (tag.name === "include") {
-      parent.children.push(child);
     } else {
       throw new Error(`${file}: the portal doesn't support {% ${tag.name} %} blocks yet`);
     }
@@ -125,12 +122,6 @@ function validate(block: GitbookBlock, file: string) {
   if (block.name === "hint" && !hintStyles.includes(style as never)) {
     throw new Error(`${file}: hint style "${style}" isn't one of ${hintStyles.join(", ")}`);
   }
-}
-
-/** The include path of an `{% include "…" %}` paragraph, if that's what it is. */
-export function includeOf(node: RootContent) {
-  const tag = tagOf(node);
-  return tag?.name === "include" ? tag.attributes.src : null;
 }
 
 export function textOf(node: Nodes): string {

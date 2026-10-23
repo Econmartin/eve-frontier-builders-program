@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join, posix } from "node:path";
 import type { Heading, List, Nodes, Root, RootContent } from "mdast";
 import { parse as parseYaml } from "yaml";
-import { includeOf, parseMarkdown, tagOf, textOf } from "./parse";
+import { parseMarkdown, tagOf, textOf } from "./parse";
 import type { Template, TemplatePart } from "@/lib/template";
 import type {
   ByAnswer,
@@ -21,11 +21,9 @@ import type {
 } from "./types";
 
 /**
- * Three sources, one level up from web/: the GitBook space (glossary and
- * library), the curriculum that joins it up into courses, and the pinned
- * builder docs.
+ * Two sources, one level up from web/: the curriculum, which is also the
+ * GitBook space, and the pinned builder docs.
  */
-const contentRoot = join(process.cwd(), "..", "content");
 const curriculumRoot = join(process.cwd(), "..", "curriculum");
 const vendorRoot = join(process.cwd(), "..", "vendor");
 
@@ -49,9 +47,7 @@ interface VendorSource {
 const cache = process.env.NODE_ENV === "production";
 const fresh = (at: number) => cache || Date.now() - at < 1000;
 
-/** Lessons come from the curriculum; every other Markdown file from the GitBook space. */
-const read = (file: string) =>
-  readFileSync(file.startsWith("lessons/") ? join(curriculumRoot, file) : join(contentRoot, file), "utf8");
+const read = (file: string) => readFileSync(join(curriculumRoot, file), "utf8");
 
 const readYaml = (file: string) => parseYaml(readFileSync(join(curriculumRoot, file), "utf8")) ?? {};
 
@@ -59,7 +55,7 @@ const readYaml = (file: string) => parseYaml(readFileSync(join(curriculumRoot, f
 
 let nav: { at: number; groups: NavGroup[] } | undefined;
 
-/** The GitBook space's SUMMARY.md: which glossary and library pages exist. */
+/** The GitBook space's SUMMARY.md: which pages editors can see there. */
 export function getNav(): NavGroup[] {
   if (nav && fresh(nav.at)) return nav.groups;
   const { root } = parseMarkdown(read("SUMMARY.md"), "SUMMARY.md");
@@ -90,7 +86,7 @@ const flatten = (items: NavItem[]): NavItem[] => items.flatMap((item) => [item, 
 /** Every page in the GitBook space. */
 const spacePages = () => getNav().flatMap((group) => flatten(group.items));
 
-/* ---------- the glossary: every term on one page, articles beside it ---------- */
+/* ---------- the glossary: every term on one page, articles in glossary/ ---------- */
 
 /** The topics a term can belong to, as glossary.md spells them. */
 export const topics = ["Game & economy", "Sui & Move", "Smart Assemblies", "Wallet & identity", "dApps & tools"] as const;
@@ -104,7 +100,7 @@ export interface Term {
   /** False when the entry says `no highlight`. */
   highlight: boolean;
   definition: string;
-  /** The term's concept article, when it has one. */
+  /** The term's article, when it has one. */
   article?: string;
   /** The article, or the term's row in the index. */
   href: string;
@@ -147,9 +143,10 @@ export function getGlossary(): Term[] {
     if (definition?.type !== "paragraph" || /^Read the article/.test(textOf(definition))) throw new Error(`${where} needs a definition`);
     const link = more?.type === "paragraph" ? more.children.find((child) => child.type === "link") : undefined;
     const article = link && /^Read the article/.test(textOf(link)) ? posix.normalize(link.url) : undefined;
+    const slug = slugify(title);
+    if (article && article !== `glossary/${slug}.md`) throw new Error(`${where}: its article has to be glossary/${slug}.md`);
     if (article && !spacePages().some((item) => item.file === article)) throw new Error(`${where}: article ${article} isn't in SUMMARY.md`);
 
-    const slug = slugify(title);
     if (terms.some((t) => t.slug === slug)) throw new Error(`${where}: another term already has the slug "${slug}"`);
     terms.push({
       slug,
@@ -239,6 +236,7 @@ function lessonOf(slug: string, moduleHref: string, from: string): Lesson {
   } catch {
     throw new Error(`${from}: no lesson "${slug}" in curriculum/lessons/`);
   }
+  if (!spacePages().some((item) => item.file === file)) throw new Error(`${from}: ${file} isn't in SUMMARY.md, so GitBook won't show it`);
   return { file, slug, title: header.title, description: header.description, duration: header.duration, href: `${moduleHref}/${slug}` };
 }
 
@@ -383,11 +381,11 @@ export function compileTemplate(text: string, from: string): Template {
 /**
  * The address of a page on the site. Glossary pages mirror their path. A
  * lesson can sit in several modules, so its address is where it first
- * appears. Library sections and the space's own guide have none.
+ * appears. The space's own guide has none.
  */
 export function routeOf(file: string): string | undefined {
   if (file === "glossary.md") return "/glossary";
-  if (file.startsWith("concepts/")) return getGlossary().find((t) => t.article === file)?.href;
+  if (file.startsWith("glossary/")) return getGlossary().find((t) => t.article === file)?.href;
   if (file.startsWith("lessons/")) {
     for (const course of getCourses()) {
       for (const part of course.modules) {
@@ -421,12 +419,12 @@ export function getPage(file: string): Page {
 }
 
 /**
- * Parses Markdown and resolves it. Curriculum text (lessons, and the intros in
- * the YAML files) names what it links to; GitBook pages link by path.
+ * Parses Markdown and resolves it. Lessons, and the intros in the YAML files,
+ * name what they link to; glossary pages link by path.
  */
 export function renderMarkdown(source: string, file: string): Root {
   const { root } = parseMarkdown(source, file);
-  root.children = expand(root.children, file, new Set([file]));
+  root.children = expand(root.children, file);
   dropTitle(root);
   resolve(root, file);
   personalise(root, file);
@@ -460,22 +458,11 @@ function dropTitle(root: Root) {
 }
 
 /**
- * Turns drop-in blocks into their content: `include` (a library section),
- * `excerpt` (pinned builder docs), `glossary` (a term card) and `exercise`.
- * Included content resolves its links from its own file.
+ * Turns drop-in blocks into their content: `excerpt` (pinned builder docs),
+ * `glossary` (a term card), `exercise`, and the personalised blocks.
  */
-function expand(children: RootContent[], file: string, seen: Set<string>): RootContent[] {
+function expand(children: RootContent[], file: string): RootContent[] {
   return children.flatMap((node): RootContent[] => {
-    const tagInclude = includeOf(node);
-    if (tagInclude) return include(posix.join(posix.dirname(file), tagInclude), file, seen);
-
-    if (node.type === "code" && node.lang === "include") {
-      const { file: target } = parseYaml(node.value) ?? {};
-      if (typeof target !== "string" || !target.startsWith("library/")) {
-        throw new Error(`${file}: an include block needs a file in library/`);
-      }
-      return include(target, file, seen);
-    }
     if (node.type === "code" && node.lang === "excerpt") return [excerpt(node.value, file)];
     const block = (lang: string) => (node.type === "code" && node.lang === lang ? (parseYaml(node.value) ?? {}) : undefined);
     let config;
@@ -523,19 +510,9 @@ function expand(children: RootContent[], file: string, seen: Set<string>): RootC
       if (typeof id !== "string") throw new Error(`${file}: an exercise block needs an id`);
       return [{ type: "exercise", id, config } satisfies Exercise];
     }
-    if (node.type === "gitbook") node.children = expand(node.children, file, seen);
+    if (node.type === "gitbook") node.children = expand(node.children, file);
     return [node];
   });
-}
-
-function include(target: string, from: string, seen: Set<string>): RootContent[] {
-  if (seen.has(target)) throw new Error(`${from}: ${target} includes itself`);
-  if (!spacePages().some((item) => item.file === target)) throw new Error(`${from}: ${target} isn't in the GitBook space's SUMMARY.md`);
-  const { root } = parseMarkdown(read(target), target);
-  root.children = expand(root.children, target, new Set([...seen, target]));
-  dropTitle(root);
-  resolve(root, target);
-  return root.children;
 }
 
 let manifest: Record<string, VendorSource> | undefined;
@@ -577,11 +554,12 @@ function excerpt(value: string, file: string): Excerpt {
 
 /**
  * Rewrites links as site addresses, marks glossary links for previews, and
- * rejects broken ones. Curriculum text uses `glossary:name` and `lesson:name`;
- * GitBook pages link to `glossary.md#name` and to articles by relative path.
+ * rejects broken ones. Lessons use `glossary:name` and `lesson:name`; glossary
+ * pages link to `glossary.md#name` and to articles by relative path, so the
+ * links work in GitBook too.
  */
 function resolve(root: Root, file: string) {
-  const curriculum = !/^(library|concepts)\/|^glossary\.md$/.test(file);
+  const byName = !/^glossary(\/|\.md$)/.test(file);
 
   visit(root, (node) => {
     if (node.type === "paragraph" && tagOf(node)) {
@@ -600,13 +578,13 @@ function resolve(root: Root, file: string) {
       return;
     } else if (/^[a-z]+:|^#|^\//.test(node.url)) {
       return;
-    } else if (curriculum) {
+    } else if (byName) {
       throw new Error(`${file}: link to "${node.url}"; use glossary:name or lesson:name`);
     } else {
       const target = posix.normalize(posix.join(posix.dirname(file), decodeURI(path)));
       if (target === "glossary.md" && hash) term = termOf(hash, file);
-      else if (target.startsWith("concepts/")) term = getGlossary().find((t) => t.article === target);
-      if (!term) throw new Error(`${file}: link to ${node.url}; GitBook pages can only link to glossary terms and articles`);
+      else if (target.startsWith("glossary/")) term = getGlossary().find((t) => t.article === target);
+      if (!term) throw new Error(`${file}: link to ${node.url}; glossary pages can only link to terms and articles`);
     }
 
     node.url = term.href;

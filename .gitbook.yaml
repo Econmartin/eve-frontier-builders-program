@@ -1,4 +1,4 @@
-root: ./content/
+root: ./curriculum/
 
 structure:
   readme: README.md

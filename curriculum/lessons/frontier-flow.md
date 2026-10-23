@@ -44,10 +44,13 @@ A successful build means the compiler accepts the code. It doesn't mean the code
 
 ## Before you deploy anything
 
-```include
-file: library/pillar-1/check-generated-code.md
-```
+Before you trust code a tool generated for you:
 
-```include
-file: library/pillar-0/protect-your-keys.md
-```
+1. **Read it.** If you can't explain a line, find out before going further.
+2. **Build it** with `sui move build`, and don't accept a build that only passes because checks were removed.
+3. **Test it on localnet,** then on testnet.
+4. **Only then** think about [Stillness](glossary:stillness).
+
+{% hint style="danger" %}
+Never share a private key or recovery phrase with anyone, and never paste one into a website, chat or AI assistant. EVE Vault doesn't give you one, but other Sui wallets and tools do.
+{% endhint %}
