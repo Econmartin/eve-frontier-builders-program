@@ -1,6 +1,6 @@
 ---
 duration: 1 min
-description: "This decides how much setup you need. Start small; you can grow it later."
+description: This decides how much setup you need. Start small; you can grow it later.
 ---
 
 # Who is it for?
@@ -13,7 +13,7 @@ ask: audience
 answer: audience
 variants:
   me: |-
-    **Got it.** Something just for you. Keep it simple: no website or hosting needed yet.
+    **Got it.** Edit test here just for you. Keep it simple: no website or hosting needed yet.
 
     **Whoever it's for: never give any AI your wallet recovery phrase or private keys.**
   friends: |-
