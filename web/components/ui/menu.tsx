@@ -69,9 +69,9 @@ export function Menu({ label, children }: MenuProps) {
                 <Icon
                   name="caret"
                   className={cn(
-                    "size-2.5 text-muted transition-[rotate,color] duration-200 motion-reduce:transition-none",
-                    "group-hover:text-foreground group-focus-visible:text-foreground",
-                    "group-data-popup-open:rotate-180 group-data-popup-open:text-foreground",
+                    "size-2.5 text-muted transition-[rotate] duration-200 motion-reduce:transition-none",
+                    "group-hover:text-accent group-focus-visible:text-accent",
+                    "group-data-popup-open:rotate-180 group-data-popup-open:text-accent",
                   )}
                 />
               }
@@ -127,7 +127,7 @@ export function MenuLink({ href, sub = false, current = false, className, childr
       )}
     >
       {sub && <span className={styles.branch} aria-hidden="true" />}
-      <span className={cn("h-2 w-1 flex-none", navStyles.lamp, styles.lamp)} aria-hidden="true" />
+      <span className={cn(navStyles.lamp, styles.lamp)} aria-hidden="true" />
       {children}
       {external && (
         <>

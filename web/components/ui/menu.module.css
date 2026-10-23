@@ -50,19 +50,22 @@
     --plate-keyline-width: 2px;
   }
 
-  /* The nav module's lamp, lit on highlight and the current page */
+  /* The nav module's lamp, a row shorter than the bar's, lit on highlight
+    and the current page */
+  .link .lamp { height: 11px; }
   .link:is([data-highlighted], [aria-current]) .lamp {
-    background: var(--nav-lamp-lit);
-    box-shadow: var(--nav-lamp-glow);
+    --nav-lamp: var(--nav-lamp-lit);
+    filter: var(--nav-lamp-glow);
   }
 
-  /* Branch from below a parent's lamp to each child's, 2px so it centres on
-    the 4px lamp at 16–20px. Links clip their contents, so the parent draws
-    the stub below its lamp and each child draws on from its own top. */
+  /* Branch from below a parent's lamp to each child's, 2px down the lamp's
+    first column of squares. Links clip their contents, so the parent draws
+    the stub from 4px below its 11px lamp and each child draws on from its
+    own top. */
   .link:not(.sub):has(+ .sub)::after {
     content: "";
     position: absolute;
-    top: calc(50% + 8px);
+    top: calc(50% + 10px);
     bottom: 0;
     left: 17px;
     border-left: 2px solid var(--color-line);
