@@ -84,7 +84,7 @@ export function Sheet({
           initialFocus={initialFocus ?? closeRef}
         >
           <Dialog.Title className="sr-only">{label}</Dialog.Title>
-          <div className="mx-auto flex min-h-(--bar-height) max-w-grid items-center justify-between gap-s bg-background px-s-l">
+          <div className="mx-auto flex min-h-(--bar-height) max-w-grid items-center justify-between gap-s bg-background bg-grain px-s-l">
             {header}
             <Dialog.Close ref={closeRef} render={<DotsButton />} aria-label={`Close ${label.toLowerCase()}`}>
               <Dots cross />
