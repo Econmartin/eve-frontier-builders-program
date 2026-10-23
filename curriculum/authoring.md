@@ -71,7 +71,7 @@ nodes:
 ```
 ````
 
-An `excerpt` quotes the official builder docs instead of copying them, pinned to the version recorded in `vendor/manifest.json`. A file has to be in the snapshot first, so ask an engineer to add new ones.
+An `excerpt` quotes the official builder docs instead of copying them, pinned to the version recorded in `reference/manifest.json`. A file has to be in the snapshot first, so ask an engineer to add new ones.
 
 ## Personalising a lesson
 

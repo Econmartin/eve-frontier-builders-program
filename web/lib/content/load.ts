@@ -25,7 +25,7 @@ import type {
  * GitBook space, and the pinned builder docs.
  */
 const curriculumRoot = join(process.cwd(), "..", "curriculum");
-const vendorRoot = join(process.cwd(), "..", "vendor");
+const referenceRoot = join(process.cwd(), "..", "reference");
 
 interface Page {
   file: string;
@@ -36,7 +36,7 @@ interface Page {
   root: Root;
 }
 
-interface VendorSource {
+interface ReferenceSource {
   repo: string;
   commit: string;
   files: Record<string, string>;
@@ -515,22 +515,22 @@ function expand(children: RootContent[], file: string): RootContent[] {
   });
 }
 
-let manifest: Record<string, VendorSource> | undefined;
+let manifest: Record<string, ReferenceSource> | undefined;
 
 function excerpt(value: string, file: string): Excerpt {
-  if (!cache || !manifest) manifest = JSON.parse(readFileSync(join(vendorRoot, "manifest.json"), "utf8")).sources as Record<string, VendorSource>;
+  if (!cache || !manifest) manifest = JSON.parse(readFileSync(join(referenceRoot, "manifest.json"), "utf8")).sources as Record<string, ReferenceSource>;
   const { source: name, file: path, heading } = parseYaml(value) ?? {};
   const source = manifest[name];
-  if (!source) throw new Error(`${file}: no vendored source "${name}"`);
+  if (!source) throw new Error(`${file}: no reference source "${name}"`);
   const hash = source.files[path];
-  if (!hash) throw new Error(`${file}: ${name}/${path} isn't in the snapshot; add it with scripts/refresh-vendor.mjs`);
+  if (!hash) throw new Error(`${file}: ${name}/${path} isn't in the snapshot; add it with scripts/refresh-reference.mjs`);
 
-  const data = readFileSync(join(vendorRoot, name, path));
+  const data = readFileSync(join(referenceRoot, name, path));
   if (createHash("sha256").update(data).digest("hex") !== hash) {
-    throw new Error(`vendor/${name}/${path} doesn't match vendor/manifest.json`);
+    throw new Error(`reference/${name}/${path} doesn't match reference/manifest.json`);
   }
 
-  const { root } = parseMarkdown(data.toString("utf8"), `vendor/${name}/${path}`);
+  const { root } = parseMarkdown(data.toString("utf8"), `reference/${name}/${path}`);
   const start = root.children.findIndex(
     (node) => node.type === "heading" && textOf(node).trim().toLowerCase() === String(heading).trim().toLowerCase(),
   );

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Refreshes a vendored snapshot of another repository's files and records
-// their hashes in vendor/manifest.json. Only this script touches the network;
+// Refreshes a pinned snapshot of another repository's files and records
+// their hashes in reference/manifest.json. Only this script touches the network;
 // the site build verifies the hashes and never fetches.
 //
-//   node scripts/refresh-vendor.mjs builder-documentation             # files already listed, at the source's latest commit
-//   node scripts/refresh-vendor.mjs builder-documentation --commit <sha>
-//   node scripts/refresh-vendor.mjs builder-documentation --add tools/resources.md
-//   node scripts/refresh-vendor.mjs --check                           # verify every hash, no network
+//   node scripts/refresh-reference.mjs builder-documentation             # files already listed, at the source's latest commit
+//   node scripts/refresh-reference.mjs builder-documentation --commit <sha>
+//   node scripts/refresh-reference.mjs builder-documentation --add tools/resources.md
+//   node scripts/refresh-reference.mjs --check                           # verify every hash, no network
 
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -15,8 +15,8 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const vendorDir = join(root, "vendor");
-const manifestPath = join(vendorDir, "manifest.json");
+const referenceDir = join(root, "reference");
+const manifestPath = join(referenceDir, "manifest.json");
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -34,7 +34,7 @@ if (values.check) {
   let failed = 0;
   for (const [name, source] of Object.entries(manifest.sources)) {
     for (const [path, hash] of Object.entries(source.files)) {
-      const actual = sha256(await readFile(join(vendorDir, name, path)));
+      const actual = sha256(await readFile(join(referenceDir, name, path)));
       if (actual !== hash) {
         console.error(`mismatch: ${name}/${path}`);
         failed++;
@@ -42,7 +42,7 @@ if (values.check) {
     }
   }
   if (failed) process.exit(1);
-  console.log("vendor snapshot matches manifest");
+  console.log("reference snapshot matches manifest");
   process.exit(0);
 }
 
@@ -62,7 +62,7 @@ for (const path of paths) {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`${response.status} fetching ${url}`);
   const data = Buffer.from(await response.arrayBuffer());
-  const target = join(vendorDir, name, path);
+  const target = join(referenceDir, name, path);
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, data);
   files[path] = sha256(data);

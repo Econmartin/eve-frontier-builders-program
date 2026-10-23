@@ -21,4 +21,6 @@ GitBook shows the Markdown pages listed in `SUMMARY.md`; add a new lesson or art
 
 Courses, modules and pathways refer to each other by file name, without the extension. A module can sit in more than one course and a lesson in more than one module; each place gets its own address, and search engines are pointed at the first. File names become addresses, so keep them short, lowercase and hyphenated, and don't rename one that's already live.
 
+Quoted sections of the official builder docs come from a pinned copy in the repository's `reference/` folder, outside this space.
+
 [Writing for this space](authoring.md) covers the formatting.

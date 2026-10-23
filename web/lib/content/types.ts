@@ -12,7 +12,7 @@ export interface GitbookBlock extends Parent {
   children: RootContent[];
 }
 
-/** A section quoted from a vendored source, resolved at build time. */
+/** A section quoted from a pinned reference source, resolved at build time. */
 export interface Excerpt extends Parent {
   type: "excerpt";
   title: string;
