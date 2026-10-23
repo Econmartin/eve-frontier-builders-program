@@ -39,23 +39,36 @@
   .link:last-child { --cut-bl: var(--menu-cut); }
 
   /* Plate paints the keyline under the fill, so a fading fill would show
-    the ring through the row. Scoped to outrank Plate's own rule. */
-  .list .link::before { transition: none; }
+    the ring through the row. The element selector outranks Plate's rule. */
+  a.link::before { transition: none; }
 
-  .link[data-highlighted],
-  .link[aria-current] { --plate-fill: var(--color-card); }
+  /* Row states, in a menu or out of one: highlight, hover, the current
+    page and focus fill the row and light its lamp. Keyboard focus adds a
+    2px keyline, which the fill turns into a ring since Plate paints the
+    keyline underneath. A menu focuses its first row however it opened, so
+    there the ring waits for the keyboard. */
+  .link:is([data-highlighted], [aria-current], :focus-visible) { --plate-fill: var(--color-card); }
+  @media (hover: hover) {
+    .link:hover { --plate-fill: var(--color-card); }
+  }
 
-  .popup[data-input="keyboard"] .link:focus-visible {
+  .popup[data-input="keyboard"] .link:focus-visible,
+  .link:not([role="menuitem"]):focus-visible {
     --plate-keyline: var(--color-foreground);
     --plate-keyline-width: 2px;
   }
 
-  /* The nav module's lamp, a row shorter than the bar's, lit on highlight
-    and the current page */
+  /* The nav module's lamp, a row shorter than the bar's */
   .link .lamp { height: 11px; }
-  .link:is([data-highlighted], [aria-current]) .lamp {
+  .link:is([data-highlighted], [aria-current], :focus-visible) .lamp {
     --nav-lamp: var(--nav-lamp-lit);
     filter: var(--nav-lamp-glow);
+  }
+  @media (hover: hover) {
+    .link:hover .lamp {
+      --nav-lamp: var(--nav-lamp-lit);
+      filter: var(--nav-lamp-glow);
+    }
   }
 
   /* Branch from below a parent's lamp to each child's, 2px down the lamp's
@@ -98,6 +111,6 @@
   }
 
   @media (forced-colors: active) {
-    .link[data-highlighted] { outline: 2px solid Highlight; outline-offset: -2px; }
+    .link:is([data-highlighted], :not([role="menuitem"]):focus-visible) { outline: 2px solid Highlight; outline-offset: -2px; }
   }
 }

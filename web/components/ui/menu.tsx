@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useState, type ComponentProps, type ComponentPropsWithRef, type ElementType, type ReactNode } from "react";
 import Link from "next/link";
 import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { Icon } from "./icon";
@@ -96,30 +96,39 @@ export function Menu({ label, children }: MenuProps) {
   );
 }
 
-export type MenuLinkProps = {
+export type LinkRowProps = {
   href: string;
   sub?: boolean;
   current?: boolean;
-  className?: string;
-} & Omit<ComponentProps<typeof BaseMenu.LinkItem>, "href" | "className">;
+} & Omit<ComponentPropsWithRef<"a">, "href">;
 
 /**
- * A link inside `Menu`; `sub` indents it under the link before, `current`
- * marks the page. Links on the site go through Next's `Link`; links off it
- * open in a new tab.
+ * A link row as `Menu` draws it, with its lamp, and outside a menu too,
+ * such as a list of secondary links. `sub` indents it under the row before,
+ * with a branch line when the rows are siblings; `current` marks the page.
+ * Links on the site go through Next's `Link`; links off it open in a new tab.
+ *
+ * @example
+ * ```tsx
+ * <nav aria-label="Secondary" className="grid">
+ *   <LinkRow href="https://docs.evefrontier.com/">Documentation</LinkRow>
+ *   <LinkRow href="/glossary" sub>Glossary</LinkRow>
+ * </nav>
+ * ```
  */
-export function MenuLink({ href, sub = false, current = false, className, children, ...rest }: MenuLinkProps) {
+export function LinkRow({ href, sub = false, current = false, className, children, ...rest }: LinkRowProps) {
   const external = isExternal(href);
+  const Component: ElementType = external ? "a" : Link;
 
   return (
-    <BaseMenu.LinkItem
-      // Base UI leaves link items open by default
-      closeOnClick
+    <Plate
+      as={Component}
+      href={href}
+      {...(external && EXTERNAL)}
       {...rest}
-      render={external ? <Plate as="a" href={href} {...EXTERNAL} /> : <Plate as={Link} href={href} />}
       aria-current={current ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 py-3 pr-5 text-step--1 leading-none font-bold tracking-[0.06em] text-foreground uppercase no-underline",
+        "flex items-center gap-3 py-2xs pr-5 text-step--1 leading-none font-bold tracking-[0.06em] text-foreground uppercase no-underline",
         sub ? "pl-8" : "pl-4",
         styles.link,
         sub && styles.sub,
@@ -135,7 +144,26 @@ export function MenuLink({ href, sub = false, current = false, className, childr
           <span className="sr-only"> (opens in a new tab)</span>
         </>
       )}
-    </BaseMenu.LinkItem>
+    </Plate>
+  );
+}
+
+export type MenuLinkProps = {
+  href: string;
+  sub?: boolean;
+  current?: boolean;
+  className?: string;
+} & Omit<ComponentProps<typeof BaseMenu.LinkItem>, "href" | "className" | "render">;
+
+/** A `LinkRow` inside `Menu`, where Base UI moves the highlight through the rows. */
+export function MenuLink({ href, sub, current, className, ...rest }: MenuLinkProps) {
+  return (
+    <BaseMenu.LinkItem
+      // Base UI leaves link items open by default
+      closeOnClick
+      {...rest}
+      render={<LinkRow href={href} sub={sub} current={current} className={className} />}
+    />
   );
 }
 
