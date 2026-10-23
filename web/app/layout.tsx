@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+// First, so Tailwind declares the layer order before any component module adds to a layer
+import "./globals.css";
 import { disketMono, inter } from "./fonts";
 import { THEME_SCRIPT } from "@/lib/theme";
-import "./globals.css";
 
 export const metadata: Metadata = {
   title: "EVE Frontier Builders",
