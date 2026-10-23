@@ -91,7 +91,9 @@ export function Sheet({
             </Dialog.Close>
           </div>
           <div className={cn("grid border-b border-line bg-background", styles.body)}>
-            <div className="min-h-0 overflow-hidden">
+            {/* Positioned, so absolutely placed content (a visually hidden label) is clipped
+                here rather than stretching the popup's scroll area while the row grows */}
+            <div className="relative min-h-0 overflow-hidden">
               <div className="mx-auto grid max-w-grid gap-s px-s-l pt-s pb-m" onClick={closeOnLink}>
                 {children}
               </div>

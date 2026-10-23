@@ -57,6 +57,10 @@
   --text-step-3:   clamp(1.938rem, 1.875rem + 0.3125vw, 2.25rem);
   --text-step-4:   clamp(2.312rem, 2.175rem + 0.6875vw, 3rem);
   --text-step-5:   clamp(2.812rem, 2.625rem + 0.9375vw, 3.75rem);
+  /* the TopBar's brand, 44px to 68px with the bar's width. In the Sheet's
+    portalled header, outside the bar's container, cqi reads the viewport,
+    which matches because the bar spans it. */
+  --text-brand:    clamp(2.75rem, 4.8cqi, 4.25rem);
 
   /* leading: 1.5 on the body steps (WCAG 1.4.12), tightening on the
     heading-only steps */
@@ -69,6 +73,7 @@
   --text-step-3--line-height:  1.08;
   --text-step-4--line-height:  1.04;
   --text-step-5--line-height:  1;
+  --text-brand--line-height:   1;
 
   /* space */
   --spacing-3xs:   0.25rem;
@@ -135,8 +140,11 @@
   /* interlock seam: between NavItems, and between a NavList and a Field */
   --nav-gap: 7px;
 
-  /* top bar row, which the Sheet's header redraws */
-  --bar-height: 64px;
+  /* top bar row, which the Sheet's header redraws. It grows with the bar's width
+    alongside the brand, so the brand always has room for its focus ring. The
+    Sheet's header is portalled outside the bar's container, where cqi reads
+    the viewport; the two rows agree only because the bar spans the viewport. */
+  --bar-height: clamp(62px, 5.9cqi, 86px);
 
   /* layers */
   --layer-raised: 10;
