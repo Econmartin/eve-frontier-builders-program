@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join, posix } from "node:path";
 import type { Heading, List, Nodes, Root, RootContent } from "mdast";
 import { parse as parseYaml } from "yaml";
@@ -228,14 +228,31 @@ function headerOf(file: string) {
   return { ...frontmatter, title: heading ? textOf(heading) : posix.basename(file, ".md") };
 }
 
-function lessonOf(slug: string, moduleHref: string, from: string): Lesson {
-  const file = `lessons/${slug}.md`;
-  let header;
-  try {
-    header = headerOf(file);
-  } catch {
-    throw new Error(`${from}: no lesson "${slug}" in curriculum/lessons/`);
+let lessonFiles: { at: number; files: Map<string, string> } | undefined;
+
+/**
+ * Every lesson file by name. Folders under lessons/ are only for filing, so
+ * a lesson can move between them without breaking anything that names it.
+ */
+function getLessonFiles() {
+  if (lessonFiles && fresh(lessonFiles.at)) return lessonFiles.files;
+  const files = new Map<string, string>();
+  for (const path of readdirSync(join(curriculumRoot, "lessons"), { recursive: true, encoding: "utf8" })) {
+    if (!path.endsWith(".md") || posix.basename(path) === "README.md") continue;
+    const file = posix.join("lessons", path);
+    const slug = posix.basename(path, ".md");
+    const other = files.get(slug);
+    if (other) throw new Error(`${file}: another lesson is already called "${slug}" (${other})`);
+    files.set(slug, file);
   }
+  lessonFiles = { at: Date.now(), files };
+  return files;
+}
+
+function lessonOf(slug: string, moduleHref: string, from: string): Lesson {
+  const file = getLessonFiles().get(slug);
+  if (!file) throw new Error(`${from}: no lesson "${slug}" in curriculum/lessons/`);
+  const header = headerOf(file);
   if (!spacePages().some((item) => item.file === file)) throw new Error(`${from}: ${file} isn't in SUMMARY.md, so GitBook won't show it`);
   return { file, slug, title: header.title, description: header.description, duration: header.duration, href: `${moduleHref}/${slug}` };
 }
@@ -572,7 +589,8 @@ function resolve(root: Root, file: string) {
     if (/^glossary:/.test(path)) {
       term = termOf(path.slice(9), file);
     } else if (/^lesson:/.test(path)) {
-      const href = routeOf(`lessons/${path.slice(7)}.md`);
+      const lesson = getLessonFiles().get(path.slice(7));
+      const href = lesson && routeOf(lesson);
       if (!href) throw new Error(`${file}: link to lesson "${path.slice(7)}", which isn't in any course`);
       node.url = href + (hash ? `#${hash}` : "");
       return;

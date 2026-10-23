@@ -35,7 +35,7 @@ An article is for a term that needs real explanation. Save it as `glossary/<slug
 
 ## Writing a lesson
 
-A lesson is Markdown with a `description` and an optional `duration` in its frontmatter, then a `# Title`. Add it to `SUMMARY.md` and to a module's `lessons`. Link to a glossary term or another lesson by name:
+A lesson is Markdown with a `description` and an optional `duration` in its frontmatter, then a `# Title`. Save it in `lessons/pillar-N/<course>/`, under the course it was written for, then add it to `SUMMARY.md` in the same place and to a module's `lessons` by file name. Link to a glossary term or another lesson by name:
 
 ```markdown
 Your wallet is [EVE Vault](glossary:eve-vault). [Why indexers exist](lesson:why-indexers-exist) goes further.

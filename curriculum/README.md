@@ -10,7 +10,7 @@ This folder is the GitBook space and the source of the site's Learn pages. Git S
 | --- | --- | --- |
 | `glossary.md` | Every term, A to Z, on one page | `/glossary` |
 | `glossary/{term}.md` | The full article for a term that needs more than a definition | `/glossary/{term}` |
-| `lessons/{lesson}.md` | A lesson | `/courses/{course}/{module}/{lesson}` |
+| `lessons/pillar-{N}/{course}/{lesson}.md` | A lesson, filed under its pillar and the course it was written for | `/courses/{course}/{module}/{lesson}` |
 | `courses/{course}.yaml` | A course: title, description, `pillar`, and its `modules` in order | `/courses/{course}` |
 | `modules/{module}.yaml` | A module: title, description, and its `lessons` in order | `/courses/{course}/{module}` |
 | `pathways/{pathway}.yaml` | A pathway: title, description, `audience`, the answers it suits under `for:`, and its `courses` in order | `/pathways/{pathway}` |
@@ -19,7 +19,9 @@ This folder is the GitBook space and the source of the site's Learn pages. Git S
 
 GitBook shows the Markdown pages listed in `SUMMARY.md`; add a new lesson or article there too. The YAML files aren't shown in GitBook, so edit courses, modules and pathways in Git.
 
-Courses, modules and pathways refer to each other by file name, without the extension. A module can sit in more than one course and a lesson in more than one module; each place gets its own address, and search engines are pointed at the first. File names become addresses, so keep them short, lowercase and hyphenated, and don't rename one that's already live.
+Courses, modules, pathways and lessons refer to each other by file name, without the extension. A module can sit in more than one course and a lesson in more than one module; each place gets its own address, and search engines are pointed at the first. File names become addresses, so keep them short, lowercase and hyphenated, and don't rename one that's already live.
+
+Lesson folders are only for filing. A lesson is found by its name wherever it sits under `lessons/`, so two lessons can't share a name, and moving one to another folder breaks nothing. Update its path in `SUMMARY.md` when you do.
 
 Quoted sections of the official builder docs come from a pinned copy in the repository's `reference/` folder, outside this space.
 
