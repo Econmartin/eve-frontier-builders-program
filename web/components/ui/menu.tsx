@@ -119,7 +119,7 @@ export function MenuLink({ href, sub = false, current = false, className, childr
       render={external ? <Plate as="a" href={href} {...EXTERNAL} /> : <Plate as={Link} href={href} />}
       aria-current={current ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 py-3 pr-5 text-step--1 leading-none font-bold tracking-[0.06em] text-foreground uppercase no-underline outline-none",
+        "flex items-center gap-3 py-3 pr-5 text-step--1 leading-none font-bold tracking-[0.06em] text-foreground uppercase no-underline",
         sub ? "pl-8" : "pl-4",
         styles.link,
         sub && styles.sub,

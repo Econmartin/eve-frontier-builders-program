@@ -32,6 +32,8 @@
     --plate-keyline: transparent;
     --plate-keyline-width: 0px;
     --plate-fill: transparent;
+    /* Here rather than a utility, which would beat the forced-colours ring below */
+    outline: none;
   }
   .link:first-child { --cut-tr: var(--menu-cut); }
   .link:last-child { --cut-bl: var(--menu-cut); }
