@@ -3,10 +3,10 @@ export const socketTypes = /** @type {const} */ (["execution", "u64", "item", "b
 /** @typedef {(typeof socketTypes)[number]} SocketType */
 
 export const socketTypeMeta = /** @type {const} */ ({
-  execution: { badge: "exec", glyph: "▸", label: "Request flow", color: "var(--socket-execution)" },
-  u64: { badge: "u64", glyph: "●", label: "u64 integer", color: "var(--socket-u64)" },
-  item: { badge: "item", glyph: "◆", label: "Item / Entity", color: "var(--socket-item)" },
-  boolean: { badge: "bool", glyph: "▲", label: "Boolean signal", color: "var(--socket-boolean)" },
+  execution: { badge: "exec", glyph: "▸", label: "Request flow", color: "var(--color-socket-execution)" },
+  u64: { badge: "u64", glyph: "●", label: "u64 integer", color: "var(--color-socket-u64)" },
+  item: { badge: "item", glyph: "◆", label: "Item / Entity", color: "var(--color-socket-item)" },
+  boolean: { badge: "bool", glyph: "▲", label: "Boolean signal", color: "var(--color-socket-boolean)" },
 });
 
 export const constantNames = /** @type {const} */ (["CONSTANT_A", "CONSTANT_B"]);
