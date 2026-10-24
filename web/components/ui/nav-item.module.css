@@ -1,0 +1,97 @@
+/* Layered so Tailwind utilities (in @layer utilities) can override it.
+  Layout, type and colour are utilities in nav-item.tsx; this file holds
+  the interlock geometry and the lamp. */
+@layer components {
+  /* First item: the 17/5 octagon, cut by Plate */
+  .item {
+    --cut-tl: 17px;
+    --cut-br: 17px;
+    --cut-tr: 5px;
+    --cut-bl: 5px;
+    --plate-fill: var(--color-background);
+    --nav-inset: 24px;
+  }
+  .item[aria-current] { --plate-fill: var(--color-card); }
+
+  /* Following items: the left edge notches inward to meet the previous
+    item's bottom-right cut. Plate's cut variables only describe convex
+    corners, so the polygon is supplied whole. --_n is the inset of the
+    fill layer, the keyline width, and each diagonal vertex moves by
+    n·(√2 − 1) along its edge so the keyline stays even. */
+  /* 17px is the cut: the notch sits under the previous corner, --nav-gap along the seam */
+  .slot + .slot { margin-left: calc(var(--nav-gap) - 17px); }
+  /* .notched is shared with Field, which can join the end of a row */
+  .slot + .slot .item,
+  .notched {
+    --_n: var(--plate-keyline-width, 1px);
+    --plate-clip: polygon(
+      12px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 17px),
+      calc(100% - 17px) 100%, 0 100%, 17px calc(100% - 17px), 17px 5px
+    );
+    --plate-clip-inner: polygon(
+      calc(12px + var(--_n) * 2.41421) var(--_n),
+      calc(100% - 5px - var(--_n) * 0.41421) var(--_n),
+      calc(100% - var(--_n)) calc(5px + var(--_n) * 0.41421),
+      calc(100% - var(--_n)) calc(100% - 17px - var(--_n) * 0.41421),
+      calc(100% - 17px - var(--_n) * 0.41421) calc(100% - var(--_n)),
+      calc(var(--_n) * 2.41421) calc(100% - var(--_n)),
+      calc(17px + var(--_n)) calc(100% - 17px + var(--_n) * 0.41421),
+      calc(17px + var(--_n)) calc(5px - var(--_n) * 0.41421)
+    );
+  }
+  /* 24px plus the 12px top wedge */
+  .slot + .slot .item { --nav-inset: 36px; }
+
+  /* Keyboard focus thickens the keyline in the foreground colour */
+  .item:focus-visible {
+    --plate-keyline: var(--color-foreground);
+    --plate-keyline-width: 2px;
+    outline: none;
+  }
+
+  /* Lamp: dim at rest, lit on hover, focus and the current page. The lit
+    look is two properties so Menu can light its own lamps */
+  .lamp {
+    --nav-lamp-lit: var(--color-accent);
+    --nav-lamp-glow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent),
+      0 0 10px 2px color-mix(in srgb, var(--color-accent) 60%, transparent);
+    background: color-mix(in srgb, var(--color-foreground) 18%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-foreground) 12%, transparent);
+    transition: background .14s ease, box-shadow .14s ease;
+  }
+
+  .item:focus-visible .lamp,
+  .item[aria-current] .lamp {
+    background: var(--nav-lamp-lit);
+    box-shadow: var(--nav-lamp-glow);
+  }
+
+  /* Hover is gated so it can't stick after a tap */
+  @media (hover: hover) {
+    .item:hover .lamp {
+      background: var(--nav-lamp-lit);
+      box-shadow: var(--nav-lamp-glow);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lamp { transition: none; }
+  }
+
+  @media (forced-colors: active) {
+    /* Forced colours apply after transitions compute, so every frame
+      would snap to Canvas and flash */
+    .lamp { transition: none; }
+
+    /* Forced colours drop the clip-path, so the overlap would read as
+      doubled borders; space the items instead */
+    .list { gap: 6px; }
+    .slot + .slot { margin-left: 0; }
+    .slot + .slot .item { --nav-inset: 24px; }
+
+    .lamp { --nav-lamp-lit: Highlight; --nav-lamp-glow: none; background: ButtonText; box-shadow: none; }
+
+    .item:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+  }
+}

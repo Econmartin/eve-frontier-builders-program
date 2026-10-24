@@ -1,0 +1,115 @@
+/* @property registers globally, hence the prefix. The var() fallbacks below
+  keep the button drawn where @property is unsupported, minus the easing. */
+@property --btn-sweep { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
+@property --btn-ang   { syntax: "<angle>";  inherits: false; initial-value: 0deg; }
+@property --btn-key   { syntax: "<length>"; inherits: false; initial-value: 1px; }
+
+/* Layered so Tailwind utilities (in @layer utilities) can override it.
+  Layout, type, colour and cursors are utilities in button.tsx; this file
+  holds the plate geometry, the state variables and the motion. */
+@layer components {
+  /* Base button — the 17/5 octagon, 12/4 at Small (see .sm) */
+  .button {
+    --plate-keyline-width: var(--btn-key, 1px);
+    --plate-keyline: conic-gradient(from -90deg, var(--btn-sweep-color) 0 var(--btn-sweep, 0deg), var(--btn-edge) var(--btn-sweep, 0deg) 360deg);
+    --plate-fill: var(--btn-fill);
+    --cut-tl: var(--btn-cut-big);
+    --cut-br: var(--btn-cut-big);
+    --cut-tr: var(--btn-cut-small);
+    --cut-bl: var(--btn-cut-small);
+    transition: --btn-sweep .55s cubic-bezier(.2,.8,.2,1), --btn-key .2s, color .2s;
+  }
+
+  /* Hover is gated so it can't stick after a tap */
+  @media (hover: hover) {
+    .button:hover { --btn-sweep: 362deg; --btn-key: 2px; }
+  }
+  .button:focus-visible { --btn-sweep: 362deg; --btn-key: 2px; }
+  .button:active { --btn-sweep: 362deg; --btn-key: 3px; }
+
+  /* Keyboard focus lands where the eye isn't yet, so its sweep starts gently */
+  .button:focus-visible { transition: --btn-sweep .7s cubic-bezier(.45,0,.2,1), --btn-key .2s, color .2s; }
+  /* ::before is the Plate fill layer; pressing swaps the fill instantly */
+  .button:active::before { transition: none; }
+
+  .primary {
+    --btn-edge: var(--color-accent);
+    --btn-sweep-color: var(--color-foreground);
+    --btn-fill: var(--color-accent);
+  }
+  .primary:active { --btn-fill: var(--color-accent-pressed); }
+
+  .secondary {
+    --btn-edge: var(--color-foreground);
+    --btn-sweep-color: var(--color-accent);
+    --btn-fill: var(--color-background);
+  }
+  .secondary:active { --btn-fill: var(--color-card-secondary); }
+
+  .focus.sm { --btn-cut-big: 12px; --btn-cut-small: 4px; }
+
+  .cell { animation: cell 1s infinite; }
+  .cell:nth-child(2) { animation-delay: .16s; }
+  .cell:nth-child(3) { animation-delay: .32s; }
+  @keyframes cell { 0%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+  .button[aria-busy="true"] {
+    --plate-keyline: conic-gradient(from var(--btn-ang, 0deg), var(--btn-sweep-color) 0 80deg, var(--btn-edge) 80deg 360deg);
+    --btn-key: 2px;
+    animation: radar 1.2s linear infinite;
+  }
+  @keyframes radar { to { --btn-ang: 362deg; } }
+
+  .button:disabled {
+    --plate-keyline: var(--color-line);
+    --plate-fill: repeating-linear-gradient(-45deg, var(--color-line) 0 1px, transparent 1px 6px), var(--color-background);
+    --btn-sweep: 0deg;
+    --btn-key: 1px;
+  }
+
+  /* Clipped keyboard focus ring — a 2px plate tracing the button 4px out,
+    with a 2px gap. Each cut grows by 4px × (2 − √2) so the edges stay
+    parallel, and the negative margin keeps the ring out of the layout. */
+  .focus {
+    --btn-cut-big: 17px;
+    --btn-cut-small: 5px;
+    --cut-tl: calc(var(--btn-cut-big) + 2.343px);
+    --cut-br: calc(var(--btn-cut-big) + 2.343px);
+    --cut-tr: calc(var(--btn-cut-small) + 2.343px);
+    --cut-bl: calc(var(--btn-cut-small) + 2.343px);
+    --plate-keyline: transparent;
+    --plate-keyline-width: 2px;
+    --plate-fill: transparent;
+  }
+
+  .focus:has(> .button:active:not(:disabled, [aria-busy="true"])) {
+    transform: translateY(1px);
+  }
+
+  .focus:has(> .button:focus-visible) {
+    --plate-keyline: var(--color-foreground);
+    --plate-fill: var(--color-background);
+  }
+
+  .button:focus-visible { outline: none; }
+
+  /* Focus fallback for browsers without :has(). The plate clips anything
+    outside its polygon, so the ring is drawn inset. */
+  @supports not selector(:has(*)) {
+    .button:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: -5px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button, .button:focus-visible { transition: none; }
+    .button[aria-busy="true"] { animation: none; }
+    .cell { animation: none; opacity: .7; }
+  }
+
+  @media (forced-colors: active) {
+    .button { border: 1px solid ButtonText; }
+    .button:focus-visible { outline: 2px solid Highlight; outline-offset: 3px; }
+    .button:disabled { border-color: GrayText; }
+    .focus { border: 0; }
+    .cell { border: 3px solid ButtonText; }
+  }
+}
