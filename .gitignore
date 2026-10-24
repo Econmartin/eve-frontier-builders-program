@@ -5,3 +5,4 @@ Thumbs.db
 .idea/
 openspec/
 .pi/
+node_modules/

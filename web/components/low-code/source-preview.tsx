@@ -1,11 +1,21 @@
 import { formatSource, correspondingLines } from "./source.mjs";
-import type { ValueConnection } from "./connections.mjs";
+import type { ValueConnection, SocketType } from "./connections.mjs";
 import styles from "./source-preview.module.css";
 
-export function SourcePreview({ values, connections, selection }: {
-  values: Record<string, string>; connections: ValueConnection[]; selection: string | null;
+export function SourcePreview({
+  values,
+  connections,
+  selection,
+  customNames,
+  customTypes,
+}: {
+  values: Record<string, string>;
+  connections: ValueConnection[];
+  selection: string | null;
+  customNames?: Record<string, string>;
+  customTypes?: Record<string, SocketType>;
 }) {
-  const { errors, lines } = formatSource(values, connections);
+  const { errors, lines } = formatSource(values, connections, customNames, customTypes);
   const matches = correspondingLines(lines, selection);
   return <section className={styles.source} aria-label="Illustrative Move source">
     <h3 className="text-step-0">Illustrative Move · uncompiled · not the vending contract</h3>
