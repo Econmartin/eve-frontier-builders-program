@@ -1,6 +1,6 @@
 # Low-Code Learning — Front-End Architecture
 
-**Status:** Proposed; no implementation or runtime verification claimed.
+**Status:** Full exercise proposed; a UI-only Storybook preview is implemented and locally checked, with no real compiler or full exercise acceptance claimed.
 
 **Learning scope and acceptance:** [EXAMPLE_EXERCISE.md](EXAMPLE_EXERCISE.md).
 
@@ -20,7 +20,7 @@ Use Next.js, React, TypeScript, Tailwind, Node.js, and **pnpm** in line with thi
 
 Use two primary panes, with instructions above and build feedback below:
 
-- **Flow:** the scaffolded Exchange → Accept Feral Data → Dispense EU-40 → Complete exchange nodes, plus **Primitive Constant** nodes (`Type` + `Value`) supplying the quantities. Select a node to edit its supported fields and read a short explanation; `Type` is restricted to `u64` and values are positive whole numbers. Item identifiers and the storage reference render as locked, labelled fixture context, not editable fields.
+- **Flow:** the fixed **Execution flow**, Exchange → Accept Feral Data → Dispense EU-40 → Complete exchange, plus **Primitive Constant** nodes (`Type` + `Value`) supplying the quantities. Select a node to edit its supported fields and read a short explanation; `Type` is restricted to `u64` and values are positive whole numbers. Learners may connect/disconnect **Value connections** from a Primitive Constant to either supported quantity input, including sharing one copyable `u64` output across both; each input has at most one source. These connections never change the Execution flow. Item identifiers and the storage reference render as locked, labelled fixture context, not editable fields.
 - **Move source:** read-only, line-numbered generated source. Selecting a node highlights or scrolls to its mapped code region. Shared imports/signatures/resource scaffolding are labelled separately.
 - **Build feedback:** an explicit Build button, progress, actionable compiler diagnostics, and **“Built, not deployed”** after a successful current build.
 
@@ -48,7 +48,7 @@ In Next.js, keep the canvas and worker under a client boundary. Dynamically load
 
 ## 4. Generation and node-to-line mapping
 
-The checked-in exercise definition contains locked, labelled fixture item identifiers and the storage reference, a fixed topology of flow nodes and Primitive Constant nodes, explanations, the vendor manifest, and a reviewed Move template. No chain reads or live entity/component selection are required. Item identities are expected to become typed on-chain data, but that is not yet implemented; deriving them on-chain is future work. Fixture data must not appear to be verified live assets.
+The checked-in exercise definition contains locked, labelled fixture item identifiers and the storage reference, a fixed Execution flow and set of Primitive Constant nodes with learner-editable Value connections, explanations, the vendor manifest, and a reviewed Move template. No chain reads or live entity/component selection are required. Item identities are expected to become typed on-chain data, but that is not yet implemented; deriving them on-chain is future work. Fixture data must not appear to be verified live assets.
 
 Validate Primitive Constant `Type` (only `u64` in this version), positive whole-number values, supported Move integer bounds, and the constrained node/connection structure. Use `bigint` for numeric handling and decimal strings when serializing; no floating-point quantities or arbitrary injected Move identifiers/source.
 
@@ -83,6 +83,18 @@ Test the static production build for worker/WASM asset paths, MIME types, and CS
 A successful build establishes compiler acceptance, **not** correct runtime economics, a published package, deployed ABI compatibility, or successful game interaction. Do not add inactive wallet/deploy controls suggesting otherwise; describe testnet deployment as a future lesson.
 
 ## 6. Delivery and verification
+
+### UI-only preview delivered ahead of the full exercise
+
+The execution spine means the same fixed Execution flow; only Value connections are learner-authored.
+
+The [local previews](../../web/components/low-code/README.md) extend the existing Storybook under `Components/Low Code/...`. They use shared Plate/Field/Button presentations, thin ReactFlow handles, story-local state, and small pure validation/connection/source modules. Fixed-name CONSTANT_A and CONSTANT_B begin independently wired. Labelled keyboard controls invoke the same connection rules as canvas interaction, and Trace source buttons select the same correspondence as node clicks. Invalid text does not remove or prevent typed wiring.
+
+The primitive accepts the full `u64` range, trims surrounding whitespace for validation, accepts leading zeros, retains entered text and canonicalises source literals. This is distinct from the full exercise's positive-quantity rule. Both displayed constants are declared, including unused ones; any invalid constant or missing quantity input withholds the snippet. Only constants and Accept/Dispense quantity uses have source correspondence. The example is illustrative, uncompiled and not the vending contract; no production generation, worker/compiler, wallet or inventory enforcement is included.
+
+Run `pnpm storybook` or `pnpm build-storybook` from `web/`. Focused zero-dependency checks run with `node --test components/low-code/preview.test.mjs`; [validation results](../../web/components/low-code/VALIDATION.md) record executed commands and browser checks. These checks do not replace the full-exercise gates below or its finalised vendored-snapshot prerequisite.
+
+### Full exercise acceptance (not delivered by the preview)
 
 | Work | Acceptance evidence |
 |---|---|
