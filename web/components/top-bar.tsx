@@ -1,9 +1,9 @@
 "use client";
 
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Form from "next/form";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { claimsShortcut, Field, Icon, LinkRow, Menu, MenuLink, MenuSeparator, NavItem, NavList, Sheet, ThemeToggle } from "@/components/ui";
 import { NavItemControl } from "@/components/ui/nav-item";
 import { cn } from "@/lib/cn";
@@ -50,6 +50,7 @@ export function TopBar({ brand, tabs, secondary = [], search = SEARCH_ROUTE }: T
   const [sheetOpen, setSheetOpen] = useState(false);
   const [focusField, setFocusField] = useState(false);
   const sheetFieldRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState("");
 
   useLayoutEffect(() => {
     const deck = deckRef.current;
@@ -114,6 +115,12 @@ export function TopBar({ brand, tabs, secondary = [], search = SEARCH_ROUTE }: T
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  // The bar's field follows the searched query, unless someone is typing in it
+  useEffect(() => {
+    const field = fieldRef.current;
+    if (field && document.activeElement !== field) field.value = query;
+  }, [query]);
+
   const shown = tabs.slice(0, visible);
   const hidden = tabs.slice(visible);
   const hasMore = hidden.length > 0 || hasSecondary;
@@ -123,6 +130,9 @@ export function TopBar({ brand, tabs, secondary = [], search = SEARCH_ROUTE }: T
   return (
     // A size container, so the brand and the bar's height scale with the bar rather than the window
     <header className="@container sticky top-0 z-(--layer-sticky) border-b border-line bg-background bg-grain">
+      <Suspense fallback={null}>
+        <SearchQuery name={name} active={samePath(pathname, search.action)} onQuery={setQuery} />
+      </Suspense>
       <div className="mx-auto flex min-h-(--bar-height) max-w-grid items-center gap-s px-s-l">
         <Brand {...brand} />
 
@@ -194,7 +204,7 @@ export function TopBar({ brand, tabs, secondary = [], search = SEARCH_ROUTE }: T
             {/* The Sheet spaces its sections by --spacing-s; the field and the tabs stack closer */}
             <div className="grid gap-2xs">
               <Form action={search.action} role="search" onSubmit={() => setSheet(false)}>
-                <Field ref={sheetFieldRef} name={name} placeholder={SEARCH} aria-label={SEARCH} />
+                <Field ref={sheetFieldRef} name={name} defaultValue={query} placeholder={SEARCH} aria-label={SEARCH} />
               </Form>
               <nav aria-label="Primary">
                 <ul role="list" className="grid gap-2xs">
@@ -259,9 +269,25 @@ function startsGroup(links: { sub?: boolean }[], i: number) {
   return i > 0 && !links[i].sub && Boolean(links[i - 1].sub || links[i + 1]?.sub);
 }
 
+/* The query in the URL while on the search page, so the fields show what was searched. In its
+   own Suspense: reading search params client-renders up to the nearest boundary, and this way
+   that's only this empty component, not the bar */
+function SearchQuery({ name, active, onQuery }: { name: string; active: boolean; onQuery: (query: string) => void }) {
+  const value = useSearchParams().get(name) ?? "";
+  const query = active ? value : "";
+
+  useEffect(() => onQuery(query), [query, onQuery]);
+
+  return null;
+}
+
+const trimPath = (path: string) => path.replace(/\/+$/, "") || "/";
+
+const samePath = (a: string, b: string) => trimPath(a) === trimPath(b);
+
 /* A tab is current on its page and the pages under it, with trailing slashes ignored */
 function onPath(pathname: string, href: string) {
-  const path = pathname.replace(/\/+$/, "") || "/";
-  const target = href.replace(/\/+$/, "") || "/";
+  const path = trimPath(pathname);
+  const target = trimPath(href);
   return path === target || (target !== "/" && path.startsWith(`${target}/`));
 }
