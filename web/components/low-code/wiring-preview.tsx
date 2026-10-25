@@ -90,6 +90,7 @@ function CanvasNode({ id, data }: NodeProps<PreviewNode>) {
             type="source"
             position={Position.Right}
             id="value"
+            role="group"
             className={socketPortClassName({ direction: "out", type: dataType, connected: data.connected })}
             aria-label={`${displayName} ${dataType} value out`}
           />
@@ -104,6 +105,7 @@ function CanvasNode({ id, data }: NodeProps<PreviewNode>) {
           type="target"
           position={Position.Left}
           id="exec-in"
+          role="group"
           className={socketPortClassName({ direction: "in", type: "execution", connected: data.execInConnected })}
           aria-label={`${data.role} Request in`}
         />
@@ -115,6 +117,7 @@ function CanvasNode({ id, data }: NodeProps<PreviewNode>) {
           type="source"
           position={Position.Right}
           id="exec-out"
+          role="group"
           className={socketPortClassName({ direction: "out", type: "execution", connected: data.execOutConnected })}
           aria-label={`${data.role} Request out`}
         />
@@ -126,6 +129,7 @@ function CanvasNode({ id, data }: NodeProps<PreviewNode>) {
           type="target"
           position={Position.Left}
           id="quantity"
+          role="group"
           className={socketPortClassName({ direction: "in", type: "u64", connected: data.connected })}
           aria-label={`${data.role} u64 Quantity in`}
         />
@@ -181,17 +185,19 @@ const STARTER_VALUES = { CONSTANT_A: "10", CONSTANT_B: "40" };
 const STARTER_NAMES = { CONSTANT_A: "CONSTANT_A", CONSTANT_B: "CONSTANT_B" };
 const STARTER_TYPES: Record<string, SocketType> = { CONSTANT_A: "u64", CONSTANT_B: "u64" };
 
+export type WiringPreviewProps = {
+  initialConnections?: FlowConnection[];
+  showCodePreview?: boolean;
+  showControls?: boolean;
+  canvasOnly?: boolean;
+};
+
 export function WiringPreview({
   initialConnections: customConnections,
   showCodePreview = true,
   showControls = true,
   canvasOnly = false,
-}: {
-  initialConnections?: FlowConnection[];
-  showCodePreview?: boolean;
-  showControls?: boolean;
-  canvasOnly?: boolean;
-}) {
+}: WiringPreviewProps) {
   const [values, setValues] = useState<Record<string, string>>(STARTER_VALUES);
   const [customNames, setCustomNames] = useState<Record<string, string>>(STARTER_NAMES);
   const [customTypes, setCustomTypes] = useState<Record<string, SocketType>>(STARTER_TYPES);

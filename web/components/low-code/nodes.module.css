@@ -26,6 +26,10 @@
     --plate-fill: transparent;
   }
 
+  /* Plate paints the keyline under the fill; snap the ring's fill so the
+    dark keyline never flashes through the 4px gap while fading in */
+  .node .ring::before { transition: none; }
+
   .surface {
     width: 100%;
     height: 100%;
@@ -94,11 +98,11 @@
   }
 
   /* Sockets carry the colour of their type for the badge, name and port */
-  .socket { --_socket-color: var(--color-socket-u64); --_socket-fill: var(--color-socket-u64); }
-  .execution { --_socket-color: var(--color-socket-execution); --_socket-fill: var(--color-socket-execution-fill); }
-  .u64 { --_socket-color: var(--color-socket-u64); --_socket-fill: var(--color-socket-u64); }
-  .item { --_socket-color: var(--color-socket-item); --_socket-fill: var(--color-socket-item); }
-  .boolean { --_socket-color: var(--color-socket-boolean); --_socket-fill: var(--color-socket-boolean); }
+  .socket { --node-socket-color: var(--color-socket-u64); --node-socket-fill: var(--color-socket-u64); }
+  .execution { --node-socket-color: var(--color-socket-execution); --node-socket-fill: var(--color-socket-execution-fill); }
+  .u64 { --node-socket-color: var(--color-socket-u64); --node-socket-fill: var(--color-socket-u64); }
+  .item { --node-socket-color: var(--color-socket-item); --node-socket-fill: var(--color-socket-item); }
+  .boolean { --node-socket-color: var(--color-socket-boolean); --node-socket-fill: var(--color-socket-boolean); }
 
   /* Ports straddle the card edge on the socket row's text line. React Flow's
     handle rules sit in the base layer, so these win without !important. */

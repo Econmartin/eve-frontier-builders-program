@@ -13,6 +13,7 @@ import {
   type RefObject,
 } from "react";
 import { Dialog } from "@base-ui/react/dialog";
+import { Icon } from "@/components/ui/icon";
 import { Plate } from "@/components/ui/plate";
 import { cn } from "@/lib/cn";
 import { socketTypeMeta, type SocketType } from "./connections.mjs";
@@ -41,6 +42,8 @@ const PILL = cn(
   "inline-flex min-h-6 cursor-pointer items-center gap-0.5 border border-line bg-background px-1.5",
   "font-heading text-step--3 font-bold tracking-[0.04em] uppercase",
   "hover:border-accent focus-visible:outline-2 focus-visible:outline-foreground",
+  "aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-text-on-accent",
+  "forced-colors:aria-pressed:border-[Highlight] forced-colors:aria-pressed:bg-[Highlight] forced-colors:aria-pressed:text-[HighlightText]",
 );
 
 function ItemSearchDialog({
@@ -97,10 +100,10 @@ function ItemSearchDialog({
                 </Dialog.Description>
               </div>
               <Dialog.Close
-                className={cn(ICON_BUTTON, "border border-line text-step--2 hover:border-foreground")}
+                className={cn(ICON_BUTTON, "border border-line hover:border-foreground")}
                 aria-label="Close dialog"
               >
-                ✕
+                <Icon name="cross" className="size-2.5" />
               </Dialog.Close>
             </div>
 
@@ -118,26 +121,33 @@ function ItemSearchDialog({
               aria-label="Search item types"
             />
 
-            <div
-              className="flex max-h-65 flex-col gap-1 overflow-y-auto border border-line bg-card p-1"
-              role="listbox"
-              aria-label="Available item types"
-            >
-              {filtered.length === 0 ? (
-                <div className="flex flex-col items-center gap-2.5 px-4 py-5 text-center text-step--2 text-muted">
-                  No items match &ldquo;{query}&rdquo;.
-                  <button
-                    type="button"
-                    className="min-h-6 cursor-pointer bg-socket-item px-2.5 font-heading text-step--2 font-bold text-background hover:brightness-115 focus-visible:outline-2 focus-visible:outline-foreground"
-                    onClick={() => {
-                      if (customId) choose(customId);
-                    }}
-                  >
-                    Use custom identifier &ldquo;{customId}&rdquo;
-                  </button>
-                </div>
-              ) : (
-                filtered.map(item => (
+            {filtered.length === 0 ? (
+              <div
+                className="flex flex-col items-center gap-2.5 border border-line bg-card px-4 py-5 text-center text-step--2 text-muted"
+                role="status"
+              >
+                No items match &ldquo;{query}&rdquo;.
+                <button
+                  type="button"
+                  className={cn(
+                    "min-h-6 cursor-pointer border border-socket-item bg-background px-2.5 font-heading text-step--2 font-bold text-socket-item",
+                    "hover:bg-[color-mix(in_oklab,var(--color-socket-item)_12%,var(--color-background))]",
+                    "focus-visible:outline-2 focus-visible:outline-foreground",
+                  )}
+                  onClick={() => {
+                    if (customId) choose(customId);
+                  }}
+                >
+                  Use custom identifier &ldquo;{customId}&rdquo;
+                </button>
+              </div>
+            ) : (
+              <div
+                className="flex max-h-65 flex-col gap-1 overflow-y-auto border border-line bg-card p-1"
+                role="listbox"
+                aria-label="Available item types"
+              >
+                {filtered.map(item => (
                   <button
                     key={item.id}
                     type="button"
@@ -162,9 +172,9 @@ function ItemSearchDialog({
                       <span className="truncate">{item.description}</span>
                     </span>
                   </button>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
 
             <p className="mt-2.5 text-step--3 text-muted">
               Press <kbd className="border border-line bg-background px-1 font-heading">Esc</kbd> or click ✕ to cancel
@@ -249,13 +259,22 @@ export function socketPortClassName({
   connected?: boolean;
 }) {
   return cn(
-    "border-2 border-(--_socket-color) forced-colors:border-[CanvasText]",
-    connected ? "bg-(--_socket-fill) forced-colors:bg-[Highlight]" : "bg-background forced-colors:bg-[Canvas]",
+    "border-2 border-(--node-socket-color) forced-colors:border-[CanvasText]",
+    connected ? "bg-(--node-socket-fill) forced-colors:bg-[Highlight]" : "bg-background forced-colors:bg-[Canvas]",
     styles.port,
     styles[direction],
     styles[type],
   );
 }
+
+export type SocketProps = {
+  direction: "in" | "out";
+  type?: SocketType;
+  label?: string;
+  binding?: string;
+  connected?: boolean;
+  handle?: ReactNode;
+};
 
 export function Socket({
   direction,
@@ -264,14 +283,7 @@ export function Socket({
   binding,
   connected = false,
   handle,
-}: {
-  direction: "in" | "out";
-  type?: SocketType;
-  label?: string;
-  binding?: string;
-  connected?: boolean;
-  handle?: ReactNode;
-}) {
+}: SocketProps) {
   return (
     <div
       className={cn(
@@ -287,7 +299,7 @@ export function Socket({
         {label && <span className="font-semibold text-foreground">{label}</span>}
       </span>
       {binding && (
-        <span className="font-heading text-step--2 font-bold whitespace-nowrap text-(--_socket-color) forced-colors:text-[CanvasText]">
+        <span className="font-heading text-step--2 font-bold whitespace-nowrap text-(--node-socket-color) forced-colors:text-[CanvasText]">
           {binding}
         </span>
       )}
@@ -302,7 +314,7 @@ function TypeBadge({ type }: { type: SocketType }) {
     <span
       className={cn(
         "inline-flex items-center gap-1 border px-1.5 font-heading text-step--3 leading-tight font-bold tracking-[0.04em] whitespace-nowrap uppercase",
-        "border-(--_socket-color) bg-card text-(--_socket-color)",
+        "border-(--node-socket-color) bg-card text-(--node-socket-color)",
         "forced-colors:border-[CanvasText] forced-colors:bg-[Canvas] forced-colors:text-[CanvasText]",
       )}
     >
@@ -346,14 +358,14 @@ function NodeShell({
       </Plate>
       <div className={cn("bg-card", styles.fill)} aria-hidden="true" />
       <div className="relative z-[1] grid gap-2 px-5 pt-4 pb-5 *:min-w-0">
-        <header className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2">
           <div>
             <div className="font-heading text-step--2 tracking-[0.05em] text-muted uppercase forced-colors:text-[CanvasText]">
               {eyebrow ?? category}
             </div>
             <h3 className={cn("truncate font-heading text-step--1 font-bold", eyebrow && "sr-only")}>{title}</h3>
           </div>
-        </header>
+        </div>
         {children}
       </div>
     </div>
@@ -407,9 +419,9 @@ function useReturnFocus(editing: boolean, target: RefObject<HTMLButtonElement | 
   }, []);
 }
 
-function focusLeaves(event: FocusEvent<HTMLElement>) {
+function focusLeavesRow(event: FocusEvent<HTMLElement>) {
   const next = event.relatedTarget;
-  return !(next instanceof Node) || event.currentTarget.parentElement?.contains(next);
+  return !(next instanceof Node) || !event.currentTarget.contains(next);
 }
 
 function PropRow({ label, children }: { label: string; children: ReactNode }) {
@@ -437,6 +449,19 @@ function PropValue({ children, placeholder = false, title }: { children: ReactNo
   );
 }
 
+export type PrimitiveConstantProps = {
+  name?: string;
+  dataType?: SocketType;
+  value: string;
+  onChange: (text: string) => void;
+  onNameChange?: (name: string) => void;
+  onTypeChange?: (type: SocketType) => void;
+  selected?: boolean;
+  highlighted?: boolean;
+  connected?: boolean;
+  handle?: ReactNode;
+};
+
 export function PrimitiveConstant({
   name = "CONSTANT_A",
   dataType = "u64",
@@ -448,18 +473,7 @@ export function PrimitiveConstant({
   highlighted,
   connected,
   handle,
-}: {
-  name?: string;
-  dataType?: SocketType;
-  value: string;
-  onChange: (text: string) => void;
-  onNameChange?: (name: string) => void;
-  onTypeChange?: (type: SocketType) => void;
-  selected?: boolean;
-  highlighted?: boolean;
-  connected?: boolean;
-  handle?: ReactNode;
-}) {
+}: PrimitiveConstantProps) {
   const errorId = useId();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(name);
@@ -508,6 +522,14 @@ export function PrimitiveConstant({
     else cancel();
   }
 
+  function onPickerKeyDown(event: KeyboardEvent<HTMLElement>, close: () => void, returnFocus: () => void) {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    event.stopPropagation();
+    returnFocus();
+    close();
+  }
+
   function selectType(next: SocketType) {
     onTypeChange?.(next);
     if (next === "boolean" && !["true", "false"].includes(value.trim().toLowerCase())) {
@@ -547,25 +569,28 @@ export function PrimitiveConstant({
         <div className="nodrag nopan flex flex-col gap-2 pt-0.5 pb-1.5">
           <PropRow label="Name">
             {isEditingName ? (
-              <div className="flex w-full items-center justify-end gap-1">
+              <div
+                className="flex w-full items-center justify-end gap-1"
+                onBlur={event => {
+                  if (!focusLeavesRow(event)) return;
+                  if (event.relatedTarget === null) returnToName();
+                  commitName();
+                }}
+              >
                 <input
                   /* 16px: iOS zooms the page when a focused input is smaller */
                   className="w-full max-w-[170px] min-w-0 border border-accent bg-background px-1.5 py-0.5 font-heading text-base font-bold text-foreground outline-none"
                   value={nameDraft}
                   autoFocus
                   onChange={event => setNameDraft(event.target.value)}
-                  onBlur={event => {
-                    if (focusLeaves(event)) returnToName();
-                    commitName();
-                  }}
                   onKeyDown={event => onEditorKeyDown(event, commitName, cancelName, returnToName)}
                   aria-label="Edit constant name"
                 />
                 <button
                   type="button"
                   className={cn(ICON_BUTTON, "bg-accent text-step--2 font-bold text-text-on-accent hover:text-text-on-accent")}
-                  onMouseDown={event => {
-                    event.preventDefault();
+                  onMouseDown={event => event.preventDefault()}
+                  onClick={() => {
                     returnToName();
                     commitName();
                   }}
@@ -595,12 +620,16 @@ export function PrimitiveConstant({
 
           <PropRow label="Type">
             {isEditingType ? (
-              <div className="inline-flex flex-wrap items-center justify-end gap-1">
+              <div
+                className="inline-flex flex-wrap items-center justify-end gap-1"
+                onKeyDown={event => onPickerKeyDown(event, () => setIsEditingType(false), returnToType)}
+              >
                 {editableTypes.map(type => (
                   <button
                     key={type}
                     type="button"
-                    className={cn(PILL, type === dataType && "border-accent bg-accent text-text-on-accent")}
+                    autoFocus={type === dataType}
+                    className={PILL}
                     aria-pressed={type === dataType}
                     onClick={() => selectType(type)}
                   >
@@ -609,14 +638,14 @@ export function PrimitiveConstant({
                 ))}
                 <button
                   type="button"
-                  className={cn(ICON_BUTTON, "text-step--3 hover:text-danger")}
+                  className={cn(ICON_BUTTON, "hover:text-danger")}
                   onClick={() => {
                     returnToType();
                     setIsEditingType(false);
                   }}
                   aria-label="Close type picker"
                 >
-                  ✕
+                  <Icon name="cross" className="size-2.5" />
                 </button>
               </div>
             ) : (
@@ -638,12 +667,16 @@ export function PrimitiveConstant({
           <PropRow label="Value">
             {dataType === "boolean" ? (
               isEditingValue ? (
-                <div className="inline-flex flex-wrap items-center justify-end gap-1">
+                <div
+                  className="inline-flex flex-wrap items-center justify-end gap-1"
+                  onKeyDown={event => onPickerKeyDown(event, () => setIsEditingValue(false), returnToValue)}
+                >
                   {(["true", "false"] as const).map(option => (
                     <button
                       key={option}
                       type="button"
-                      className={cn(PILL, option === valueDraft.toLowerCase() && "border-accent bg-accent text-text-on-accent")}
+                      autoFocus={option === valueDraft.toLowerCase()}
+                      className={PILL}
                       aria-pressed={option === valueDraft.toLowerCase()}
                       onClick={() => setBoolean(option)}
                     >
@@ -652,14 +685,14 @@ export function PrimitiveConstant({
                   ))}
                   <button
                     type="button"
-                    className={cn(ICON_BUTTON, "text-step--3 hover:text-danger")}
+                    className={cn(ICON_BUTTON, "hover:text-danger")}
                     onClick={() => {
                       returnToValue();
                       setIsEditingValue(false);
                     }}
                     aria-label="Close boolean selector"
                   >
-                    ✕
+                    <Icon name="cross" className="size-2.5" />
                   </button>
                 </div>
               ) : (
@@ -695,7 +728,14 @@ export function PrimitiveConstant({
                 </button>
               </div>
             ) : isEditingValue ? (
-              <div className="flex w-full items-center justify-end gap-1">
+              <div
+                className="flex w-full items-center justify-end gap-1"
+                onBlur={event => {
+                  if (!focusLeavesRow(event)) return;
+                  if (event.relatedTarget === null) returnToValue();
+                  commitValue();
+                }}
+              >
                 <input
                   /* 16px: iOS zooms the page when a focused input is smaller */
                   className="w-full max-w-[170px] min-w-0 border border-accent bg-background px-1.5 py-0.5 font-heading text-base font-bold text-foreground outline-none placeholder:text-muted"
@@ -705,10 +745,6 @@ export function PrimitiveConstant({
                   value={valueDraft}
                   autoFocus
                   onChange={event => setValueDraft(event.target.value)}
-                  onBlur={event => {
-                    if (focusLeaves(event)) returnToValue();
-                    commitValue();
-                  }}
                   onKeyDown={event => onEditorKeyDown(event, commitValue, cancelValue, returnToValue)}
                   aria-label="Edit constant value"
                   aria-invalid={error ? true : undefined}
@@ -717,8 +753,8 @@ export function PrimitiveConstant({
                 <button
                   type="button"
                   className={cn(ICON_BUTTON, "bg-accent text-step--2 font-bold text-text-on-accent hover:text-text-on-accent")}
-                  onMouseDown={event => {
-                    event.preventDefault();
+                  onMouseDown={event => event.preventDefault()}
+                  onClick={() => {
                     returnToValue();
                     commitValue();
                   }}
@@ -773,6 +809,17 @@ export function PrimitiveConstant({
   );
 }
 
+export type OperationNodeProps = {
+  role: OperationRole;
+  item?: string;
+  connected?: boolean;
+  execInConnected?: boolean;
+  execOutConnected?: boolean;
+  selected?: boolean;
+  highlighted?: boolean;
+  handles?: Partial<Record<OperationHandleId, ReactNode>>;
+};
+
 export function OperationNode({
   role,
   item,
@@ -782,16 +829,7 @@ export function OperationNode({
   selected,
   highlighted,
   handles,
-}: {
-  role: OperationRole;
-  item?: string;
-  connected?: boolean;
-  execInConnected?: boolean;
-  execOutConnected?: boolean;
-  selected?: boolean;
-  highlighted?: boolean;
-  handles?: Partial<Record<OperationHandleId, ReactNode>>;
-}) {
+}: OperationNodeProps) {
   const spec = primitiveSpec[role];
   const resolvedItem = item ?? spec.defaultItem;
 
