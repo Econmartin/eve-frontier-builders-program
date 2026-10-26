@@ -1,0 +1,78 @@
+/* Layered so Tailwind utilities (in @layer utilities) can override it.
+  Layout, type and colour are utilities in wiring-preview.tsx; this file
+  holds React Flow's theme variables, the wire strokes and the motion. */
+@layer components {
+  .canvas {
+    --xy-background-color: var(--color-background);
+    --xy-edge-stroke: var(--color-socket-u64);
+    --xy-handle-background-color: var(--color-background);
+    --xy-handle-border-color: var(--color-foreground);
+    --xy-attribution-background-color: var(--color-card);
+    --xy-minimap-background-color: var(--color-card);
+    --xy-minimap-mask-background-color: color-mix(in oklab, var(--color-foreground) 20%, transparent);
+    --xy-controls-button-background-color: var(--color-card);
+    --xy-controls-button-background-color-hover: var(--color-card-secondary);
+    --xy-controls-button-color: var(--color-foreground);
+    --xy-controls-button-color-hover: var(--color-accent-text);
+    --xy-controls-button-border-color: var(--color-line);
+    --xy-controls-box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+  }
+
+  /* Focus draws on the node's own plate ring, not a rectangle round the wrapper */
+  .canvas :global(.react-flow__node:focus),
+  .canvas :global(.react-flow__node:focus-visible) { outline: none; }
+
+  .canvas :global(.react-flow__attribution a) { color: var(--color-foreground); }
+  .canvas :global(.react-flow__minimap) { border: 1px solid var(--color-control-line); }
+  .canvas :global(.react-flow__controls) { border: 1px solid var(--color-control-line); }
+
+  .executionEdge :global(.react-flow__edge-path) {
+    stroke: var(--color-socket-execution);
+    stroke-width: 2.5;
+    stroke-dasharray: 7 5;
+  }
+  .u64Edge :global(.react-flow__edge-path) {
+    stroke: var(--color-socket-u64);
+    stroke-width: 3;
+  }
+
+  /* A selected wire is the one the delete key removes; keyboard focus adds
+    the ink halo the node ring uses, so it reads apart from type tracing */
+  .canvas :global(.react-flow__edge.selected .react-flow__edge-path) { stroke-width: 4.5; }
+  .canvas :global(.react-flow__edge:focus-visible .react-flow__edge-path) {
+    stroke-width: 4.5;
+    filter: drop-shadow(0 0 6px var(--color-foreground));
+  }
+
+  .tracedEdge :global(.react-flow__edge-path) { stroke-width: 4.5; }
+  .executionEdge.tracedEdge :global(.react-flow__edge-path) {
+    stroke-dasharray: 8 5;
+    filter: drop-shadow(0 0 10px color-mix(in oklab, var(--color-socket-execution) 75%, transparent));
+  }
+  .u64Edge.tracedEdge :global(.react-flow__edge-path) {
+    filter: drop-shadow(0 0 10px color-mix(in oklab, var(--color-socket-u64) 85%, white));
+  }
+
+  .u64Edge:global(.animated) :global(.react-flow__edge-path) {
+    stroke-dasharray: 10 6;
+    animation: tracePulse 1.2s linear infinite;
+  }
+  @keyframes tracePulse {
+    from { stroke-dashoffset: 32; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .canvas :global(.react-flow__edge.animated .react-flow__edge-path) { animation: none; }
+  }
+
+  @media (forced-colors: active) {
+    .canvas {
+      --xy-handle-background-color: Canvas;
+      --xy-handle-border-color: CanvasText;
+    }
+    .executionEdge :global(.react-flow__edge-path),
+    .u64Edge :global(.react-flow__edge-path) { stroke: CanvasText; }
+    .canvas :global(.react-flow__edge:focus-visible .react-flow__edge-path) { stroke: Highlight; filter: none; }
+  }
+}
