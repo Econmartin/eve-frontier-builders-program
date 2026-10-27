@@ -7,7 +7,7 @@ import { TopBar } from "@/components/top-bar";
 import { THEME_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "EVE Frontier Builders",
+  title: { default: "EVE Frontier Builders", template: "%s · EVE Frontier Builders" },
   description: "A learning and enablement hub for EVE Frontier builders.",
 };
 
